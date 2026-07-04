@@ -1129,6 +1129,16 @@
 
         let pendingIaTransactions = [];
         let confirmCallback = null;
+        let cancelCallback = null;
+
+        function showCustomConfirm(message, onConfirm, onCancel) {
+            const modal = document.getElementById('modal-confirm');
+            const text = document.getElementById('confirm-modal-text');
+            text.textContent = message;
+            modal.classList.remove('hidden');
+            confirmCallback = onConfirm;
+            cancelCallback = onCancel || null;
+        }
 
         // Estado da Origem de Importação: 'extrato' ou 'cartao'
         let importType = 'extrato';
@@ -1687,7 +1697,9 @@
 
         document.getElementById('confirm-modal-cancel').addEventListener('click', () => {
             document.getElementById('modal-confirm').classList.add('hidden');
+            if (cancelCallback) cancelCallback();
             confirmCallback = null;
+            cancelCallback = null;
         });
 
         document.getElementById('confirm-modal-ok').addEventListener('click', () => {
@@ -1696,6 +1708,7 @@
                 confirmCallback();
             }
             confirmCallback = null;
+            cancelCallback = null;
         });
 
         // Carregar aplicativo
@@ -4508,7 +4521,7 @@
 
         // Salva TODOS os dados no Firestore (na conta do usuário logado)
         function saveToFirebase() {
-            if (!currentFirebaseUser) return; // só salva se estiver logado
+            if (!currentFirebaseUser) return;
             const userId = currentFirebaseUser.uid;
             db.collection('users').doc(userId).set({
                 transactions: state.transactions,
@@ -4519,56 +4532,69 @@
                 longTermGoals: state.longTermGoals,
                 investmentPercent: state.investmentPercent,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                console.log("Dados salvos no Firebase com sucesso!");
             }).catch(err => {
                 console.error("Erro ao salvar no Firebase:", err);
+                showToast("Erro ao salvar no Google. Verifique sua conexão.", "error");
             });
         }
 
-        // Carrega os dados do Firestore e atualiza o app
         function loadFromFirebase() {
             if (!currentFirebaseUser) return;
             const userId = currentFirebaseUser.uid;
+
             db.collection('users').doc(userId).get()
                 .then(doc => {
                     if (doc.exists) {
                         const data = doc.data();
-                        // Só substitui se os dados do Firebase forem mais recentes
-                        // ou se o localStorage estiver vazio
-                        const localHasData = state.transactions.length > 0 || state.categories.length > 1;
+                        const localCount = state.transactions.length;
+                        const remoteCount = (data.transactions || []).length;
 
-                        if (!localHasData) {
-                            // Local vazio — carrega tudo do Firebase
-                            applyFirebaseData(data);
-                            showToast("Dados restaurados do Google com sucesso!", "success");
-                        } else {
-                            // Ambos têm dados — pergunta qual usar
-                            const remoteDate = data.updatedAt ? data.updatedAt.toDate() : null;
-                            const localBackup = localStorage.getItem('moni_last_backup_v2');
-                            const localDate = localBackup ? new Date(localBackup) : null;
-
-                            if (remoteDate && localDate && remoteDate > localDate) {
-                                showCustomConfirm(
-                                    `Encontramos dados mais recentes no Google (${remoteDate.toLocaleDateString('pt-BR')}). Substituir os dados locais pelos dados da nuvem?`,
-                                    () => {
-                                        applyFirebaseData(data);
-                                        showToast("Dados sincronizados do Google!", "success");
-                                    }
-                                );
-                            } else {
-                                // Local é mais recente — sobe o local para o Firebase
-                                saveToFirebase();
-                                showToast("Dados locais enviados para o Google!", "success");
-                            }
+                        if (localCount === 0 && remoteCount === 0) {
+                            // Ambos vazios — não faz nada
+                            showToast("Conectado ao Google! Nenhum dado encontrado ainda.", "info");
+                            return;
                         }
+
+                        if (localCount === 0 && remoteCount > 0) {
+                            // Local vazio, nuvem tem dados — carrega da nuvem automaticamente
+                            applyFirebaseData(data);
+                            showToast(`${remoteCount} lançamentos carregados do Google!`, "success");
+                            return;
+                        }
+
+                        if (localCount > 0 && remoteCount === 0) {
+                            // Local tem dados, nuvem vazia — sobe para nuvem automaticamente
+                            saveToFirebase();
+                            showToast("Seus dados foram enviados para o Google!", "success");
+                            return;
+                        }
+
+                        // Ambos têm dados — pergunta ao usuário qual usar
+                        const remoteDate = data.updatedAt ? data.updatedAt.toDate().toLocaleDateString('pt-BR') : 'desconhecida';
+                        showCustomConfirm(
+                            `Encontramos dados tanto aqui (${localCount} lançamentos) quanto no Google (${remoteCount} lançamentos, atualizado em ${remoteDate}). Qual deseja usar?\n\nClique em "Confirmar" para usar os dados do Google, ou "Cancelar" para manter os dados locais e enviá-los para o Google.`,
+                            () => {
+                                // Usuário escolheu dados do Google
+                                applyFirebaseData(data);
+                                showToast("Dados do Google carregados com sucesso!", "success");
+                            },
+                            () => {
+                                // Usuário escolheu dados locais — sobe para o Google
+                                saveToFirebase();
+                                showToast("Seus dados locais foram enviados para o Google!", "success");
+                            }
+                        );
                     } else {
-                        // Primeira vez usando com essa conta — sobe os dados locais
+                        // Primeira vez com essa conta — sobe os dados locais
                         saveToFirebase();
-                        showToast("Dados salvos no Google pela primeira vez!", "success");
+                        showToast("Conectado! Seus dados foram salvos no Google pela primeira vez!", "success");
                     }
                 })
                 .catch(err => {
                     console.error("Erro ao carregar do Firebase:", err);
-                    showToast("Erro ao carregar dados do Google. Usando dados locais.", "error");
+                    showToast("Erro ao conectar com o Google. Verifique sua conexão.", "error");
                 });
         }
 
