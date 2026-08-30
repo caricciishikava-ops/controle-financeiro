@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Financeiro Família">
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAOjklEQVR4nO3da3BU12EH8P+uVqsXeoAeKyQBEiAhJMKbGAKuqQlgbCBgd5LYNHaZ8bip42QS0kkztQ0Tp3GcuJlOQ2jrL45jD01w/QBsTA01j9qAwCDz1gOEJxRCK8HsCglpJe1uP7g4oL177t3de/dx9v+b0QfvOXvPueavo3Ofx4QoyfnwZ75otU2R4Vy5xRTpNiPSIMNLtxkdckM3ziBTIEYFW/eNMsQULD3DrduGGGQKlx7BNuvREYaZ9KBHjsL6jWCQySihjtYhj9AMMxkp1HyFFGiGmSIhlJwFHWiGmSIp2LwFFWiGmaIhmNxpDjTDTNGkNX+aAs0wUyzQkkPVQDPMFEvU8igMNMNMsUiUy4CBZpgplgXKpy6XvolihWKgOTpTPFDKqV+gGWaKJ6PzyikHSeWuQHN0pnh0Z245QpNUGGiSypeB5nSD4tnt/HKEJqmYAI7OJA+O0CQVBpqkwkCTVBhokoqZB4QkE47QJBUGmqTCQJNUGGiSCgNNUmGgSSoMNEmFgSapMNAkFQaapMJAk1QYaJKKJdorDN1Pp9zn99lTToej0JPEwEAb7B8Y6IjilIOkwkCTVBhokgoDTVJhoEkqPMthgBRzEioy8lGVWaBY/sOyxWgbdKGhrwf1fXYM+7wR7qG8THxIVh8zMwuxvrAvaD+RXoDwjD0kmbWuvu70jOOJowV57I96+dh6O4QGDeyo3BjoMFpMZf108G8+Ufg1T0seFvT2314P/7DiN31z5GO2DvTr0MPEw0CFaY5uOzeX3Y2p6ru7bHvAM5Hch17eQWCAAAAAElFTkSuQmCC">
+    <title>Meu Controle Financeiro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4', 100: '#dcfce7', 500: '#10b981', 600: '#059669', 700: '#047857', 900: '#064e3b',
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .heading-font { font-family: 'Lexend', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-brand-500 text-white p-2.5 rounded-xl shadow-md shadow-brand-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-leaf text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="heading-font text-xl font-bold tracking-tight text-slate-900">controle financeiro família</span>
+                        <span class="text-xs block text-slate-400 font-medium -mt-1">controle pessoal</span>
+                    </div>
+                </div>
+
+                <nav class="hidden md:flex space-x-1 bg-slate-100 p-1 rounded-xl">
+                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 bg-white text-slate-900 shadow-sm">
+                        <i class="fa-solid fa-chart-line mr-2"></i>Dashboard
+                    </button>
+                    <button onclick="switchTab('lancamentos')" id="tab-lancamentos" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-list-check mr-2"></i>Lançamentos
+                    </button>
+                    <button onclick="switchTab('metas')" id="tab-metas" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-bullseye mr-2"></i>Metas
+                    </button>
+                    <button onclick="switchTab('patrimonio')" id="tab-patrimonio" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-vault mr-2"></i>Patrimônio
+                    </button>
+                    <button onclick="switchTab('configuracoes')" id="tab-configuracoes" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-sliders mr-2"></i>Configurações
+                    </button>
+                </nav>
+
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-xl p-1 shadow-sm">
+                        <button onclick="navigateMonth(1)" class="p-1 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-lg transition text-xs flex items-center justify-center w-8 h-8" title="Mês Anterior">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <div class="flex flex-col items-center min-w-[120px]">
+                            <span id="current-month-display" class="px-3 text-sm font-bold text-slate-700 text-center"></span>
+                        </div>
+                        <button onclick="navigateMonth(-1)" class="p-1 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-lg transition text-xs flex items-center justify-center w-8 h-8" title="Próximo Mês">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div id="firebase-auth-area">
+                        <button id="btn-firebase-login" onclick="firebaseSignIn()" class="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition shadow-sm" title="Sincronizar dados com Google">
+                            <i class="fa-brands fa-google text-xs"></i>
+                            <span class="hidden sm:inline" id="firebase-user-name">Sincronizar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- DASHBOARD -->
+        <section id="pane-dashboard" class="tab-content space-y-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div onclick="filterDashboardByType('income')" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-between cursor-pointer hover:border-emerald-400 transition">
+                    <div class="space-y-1">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Receitas do Mês</span>
+                        <h3 id="dash-income" class="heading-font text-2xl font-bold text-slate-950">R$ 0,00</h3>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-arrow-up-right-from-square text-lg"></i></div>
+                </div>
+                <div onclick="filterDashboardByType('expense')" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-between cursor-pointer hover:border-rose-400 transition">
+                    <div class="space-y-1">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Despesas do Mês</span>
+                        <h3 id="dash-expense" class="heading-font text-2xl font-bold text-slate-950">R$ 0,00</h3>
+                    </div>
+                    <div class="p-3 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-arrow-down-left-and-arrow-up-right-to-center text-lg"></i></div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Saldo Líquido</span>
+                        <h3 id="dash-balance" class="heading-font text-2xl font-bold text-slate-950">R$ 0,00</h3>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 text-slate-600"><i class="fa-solid fa-scale-balanced text-lg"></i></div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Patrimônio Declarado</span>
+                        <h3 id="dash-patrimonio" class="heading-font text-2xl font-bold text-slate-950">R$ 0,00</h3>
+                    </div>
+                    <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-wallet text-lg"></i></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between h-[380px] lg:col-span-1">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h4 id="pie-chart-title" class="heading-font font-semibold text-slate-900">Despesas Consolidadas</h4>
+                        </div>
+                        <div class="flex bg-slate-100 p-1 rounded-lg space-x-1">
+                            <button onclick="setPieChartType('expense')" id="btn-pie-expense" class="px-2 py-1 text-[10px] font-bold rounded bg-white text-slate-900 shadow-sm transition">Despesas</button>
+                            <button onclick="setPieChartType('income')" id="btn-pie-income" class="px-2 py-1 text-[10px] font-bold rounded text-slate-600 transition">Receitas</button>
+                        </div>
+                    </div>
+                    <div class="relative flex-grow flex items-center justify-center min-h-0">
+                        <canvas id="chart-categories" class="max-h-full max-w-full"></canvas>
+                        <div id="chart-categories-empty" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white/90">
+                            <span id="chart-empty-text" class="text-xs text-slate-400 text-center">Sem dados no período.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between h-[380px] lg:col-span-2">
+                    <h4 class="heading-font font-semibold text-slate-900 mb-4">Histórico Recente (Receitas x Despesas)</h4>
+                    <div class="relative flex-grow min-h-0"><canvas id="chart-cashflow" class="w-full h-full"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-150 flex items-center justify-between">
+                    <h4 class="heading-font font-semibold text-slate-900">Movimentações Recentes</h4>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-6 py-4">Data</th>
+                                <th class="px-6 py-4">Descrição</th>
+                                <th class="px-6 py-4">Categoria</th>
+                                <th class="px-6 py-4">Tipo</th>
+                                <th class="px-6 py-4 text-right">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dash-recent-table" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- LANÇAMENTOS -->
+        <section id="pane-lancamentos" class="tab-content space-y-8 hidden">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <h3 class="heading-font font-semibold text-lg text-slate-900 mb-4">Novo Lançamento</h3>
+                <form id="form-transaction" onsubmit="handleNewTransaction(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Tipo</label>
+                        <select id="tx-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
+                            <option value="expense">Despesa</option>
+                            <option value="income">Receita</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Descrição</label>
+                        <input type="text" id="tx-description" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Valor (R$)</label>
+                        <input type="number" step="0.01" id="tx-amount" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Data</label>
+                        <input type="date" id="tx-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 rounded-xl text-sm shadow-md">Registrar Lançamento</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-150"><h4 class="heading-font font-semibold text-slate-900">Extrato Consolidado</h4></div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-6 py-4">Data</th>
+                                <th class="px-6 py-4">Descrição</th>
+                                <th class="px-6 py-4">Tipo</th>
+                                <th class="px-6 py-4 text-right">Valor</th>
+                                <th class="px-6 py-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="master-tx-table" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- METAS -->
+        <section id="pane-metas" class="tab-content space-y-8 hidden">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <h3 class="heading-font font-semibold text-lg text-slate-900 mb-4">Metas de Longo Prazo / Projetos e Sonhos</h3>
+                <div id="goals-dreams-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+        </section>
+
+        <!-- PATRIMÔNIO -->
+        <section id="pane-patrimonio" class="tab-content space-y-8 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm lg:col-span-1">
+                    <h3 class="heading-font font-semibold text-lg text-slate-900 mb-4">Declarar Ativo</h3>
+                    <form onsubmit="handleNewPatrimonio(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Categoria</label>
+                            <select id="pat-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
+                                <option value="Dinheiro">Dinheiro / Conta</option>
+                                <option value="Investimentos">Investimentos</option>
+                                <option value="Bens Físicos">Bens Físicos</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Descrição</label>
+                            <input type="text" id="pat-desc" required placeholder="Ex: Ações XP" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Valor (R$)</label>
+                            <input type="number" step="0.01" id="pat-amount" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm">Adicionar Ativo</button>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm lg:col-span-2 flex flex-col justify-between h-[350px]">
+                    <h4 class="heading-font font-semibold text-slate-900">Evolução Patrimonial</h4>
+                    <div class="relative flex-grow min-h-0"><canvas id="chart-patrimonio" class="w-full h-full"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-slate-150 flex items-center justify-between">
+                    <h4 class="heading-font font-semibold text-slate-900">Ativos Declarados</h4>
+                    <span id="pat-total-label" class="heading-font font-bold text-lg text-blue-600">Total: R$ 0,00</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-6 py-4">Data</th>
+                                <th class="px-6 py-4">Ativo</th>
+                                <th class="px-6 py-4">Categoria</th>
+                                <th class="px-6 py-4 text-right">Valor</th>
+                                <th class="px-6 py-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pat-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONFIGURAÇÕES -->
+        <section id="pane-configuracoes" class="tab-content space-y-8 hidden">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+                <h3 class="heading-font font-semibold text-sm text-slate-900 border-b border-slate-100 pb-2 mb-3">Backup e Restauração</h3>
+                <button onclick="exportBackup()" class="w-full bg-brand-500 text-white font-semibold py-2.5 px-4 rounded-xl text-xs shadow-md">Exportar Backup Completo (.json)</button>
+                <button onclick="document.getElementById('backup-loader').click()" class="w-full border border-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl text-xs">Importar Backup</button>
+                <input type="file" id="backup-loader" accept=".json" class="hidden" onchange="importBackup(event)">
+            </div>
+        </section>
+    </main>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
+
+    <script>
+        let state = { transactions: [], categories: [], patrimonio: [], rules: [], goals: [], longTermGoals: [], investmentPercent: 10 };
+
+        const defaultCategories = [
+            { id: "cat_unidentified", name: "Não Identificado", type: "expense", color: "#64748b", parentId: null },
+            { id: "cat_empresa_caio", name: "Empresa Caio", type: "income", color: "#10b981", parentId: null },
+            { id: "cat_pro_labore", name: "Pró-Labore", type: "income", color: "#059669", parentId: "cat_empresa_caio" },
+            { id: "cat_moradia", name: "Moradia", type: "expense", color: "#f59e0b", parentId: null },
+            { id: "cat_transporte", name: "Transporte", type: "expense", color: "#3b82f6", parentId: null },
+            { id: "cat_alimentacao", name: "Alimentação", type: "expense", color: "#ef4444", parentId: null },
+            { id: "cat_educacao", name: "Educação", type: "expense", color: "#8b5cf6", parentId: null },
+            { id: "cat_lazer", name: "Lazer", type: "expense", color: "#ec4899", parentId: null },
+            { id: "cat_viagens", name: "Viagens", type: "expense", color: "#06b6d4", parentId: null },
+            { id: "cat_saude", name: "Saúde", type: "expense", color: "#10b981", parentId: null },
+            { id: "cat_pessoal", name: "Pessoal", type: "expense", color: "#d946ef", parentId: null },
+            { id: "cat_investimentos", name: "Aplicações & Investimentos", type: "expense", color: "#2563eb", parentId: null }
+        ];
+
+        const initialPatrimonioData = [
+            { id: "pat_1", category: "Dinheiro", description: "Investimento XP", amount: 99173.62, date: "2026-08-27" },
+            { id: "pat_2", category: "Dinheiro", description: "Caixinha Turbo Nucel", amount: 10146.27, date: "2026-08-27" },
+            { id: "pat_3", category: "Dinheiro", description: "Caixinha Turbo Nubank", amount: 5009.05, date: "2026-08-27" },
+            { id: "pat_4", category: "Investimentos", description: "Investimento c6", amount: 16686.08, date: "2026-08-27" }
+        ];
+
+        const initialLongTermGoals = [
+            { id: "dream_1", name: "Patrimonio de 500 mil", target: 500000, current: 131000 }
+        ];
+
+        let chartCategoriesInstance = null;
+        let chartCashflowInstance = null;
+        let chartPatrimonioInstance = null;
+        let currentPieType = 'expense';
+        let dashboardFilterType = null;
+
+        const today = new Date();
+        let currentYear = today.getFullYear();
+        let currentMonthNum = today.getMonth() + 1;
+
+        function getCategoryPath(catId) {
+            const cat = state.categories.find(c => c.id === catId);
+            if (!cat) return "Sem Categoria";
+            if (!cat.parentId) return cat.name;
+            return getCategoryPath(cat.parentId) + " ─> " + cat.name;
+        }
+
+        function filterDashboardByType(type) {
+            dashboardFilterType = type;
+            renderRecentTransactions();
+            renderTransactions();
+        }
+
+        function setPieChartType(type) {
+            currentPieType = type;
+            const btnExp = document.getElementById('btn-pie-expense');
+            const btnInc = document.getElementById('btn-pie-income');
+            const title = document.getElementById('pie-chart-title');
+            if (type === 'expense') {
+                if (btnExp) btnExp.className = "px-2 py-1 text-[10px] font-bold rounded bg-white text-slate-900 shadow-sm transition";
+                if (btnInc) btnInc.className = "px-2 py-1 text-[10px] font-bold rounded text-slate-600 transition";
+                if (title) title.textContent = "Despesas Consolidadas";
+            } else {
+                if (btnInc) btnInc.className = "px-2 py-1 text-[10px] font-bold rounded bg-white text-slate-900 shadow-sm transition";
+                if (btnExp) btnExp.className = "px-2 py-1 text-[10px] font-bold rounded text-slate-600 transition";
+                if (title) title.textContent = "Receitas Consolidadas";
+            }
+            renderDashboardCharts();
+        }
+
+        function getRootCategory(catId) {
+            const cat = state.categories.find(c => c.id === catId);
+            if (!cat) return null;
+            if (!cat.parentId) return cat;
+            return getRootCategory(cat.parentId);
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+
+        function initApp() {
+            try {
+                if (localStorage.getItem('moni_transactions_v2')) {
+                    state.transactions = JSON.parse(localStorage.getItem('moni_transactions_v2')) || [];
+                    state.categories = JSON.parse(localStorage.getItem('moni_categories_v2')) || defaultCategories;
+                    state.patrimonio = JSON.parse(localStorage.getItem('moni_patrimonio_v2')) || initialPatrimonioData;
+                    state.rules = JSON.parse(localStorage.getItem('moni_rules_v2')) || [];
+                    state.goals = JSON.parse(localStorage.getItem('moni_goals_v2')) || [];
+                    state.longTermGoals = JSON.parse(localStorage.getItem('moni_longterm_goals_v2')) || initialLongTermGoals;
+                } else {
+                    state.categories = [...defaultCategories];
+                    state.patrimonio = [...initialPatrimonioData];
+                    state.longTermGoals = [...initialLongTermGoals];
+                    saveToLocalStorage();
+                }
+
+                if (document.getElementById('tx-date')) document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
+                updateMonthDisplay();
+                updateAllViews();
+                showToast("Controle Financeiro pronto!", "success");
+            } catch (err) {
+                console.error("Erro na inicialização:", err);
+            }
+        }
+
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('moni_transactions_v2', JSON.stringify(state.transactions));
+                localStorage.setItem('moni_categories_v2', JSON.stringify(state.categories));
+                localStorage.setItem('moni_patrimonio_v2', JSON.stringify(state.patrimonio));
+                localStorage.setItem('moni_rules_v2', JSON.stringify(state.rules));
+                localStorage.setItem('moni_goals_v2', JSON.stringify(state.goals));
+                localStorage.setItem('moni_longterm_goals_v2', JSON.stringify(state.longTermGoals));
+            } catch (e) { console.error(e); }
+        }
+
+        function exportBackup() {
+            const jsonString = JSON.stringify(state, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meu_financeiro_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Backup exportado!", "success");
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    state.transactions = parsed.transactions || [];
+                    state.categories = parsed.categories || defaultCategories;
+                    state.patrimonio = parsed.patrimonio || initialPatrimonioData;
+                    state.rules = parsed.rules || [];
+                    state.goals = parsed.goals || [];
+                    state.longTermGoals = parsed.longTermGoals || initialLongTermGoals;
+                    saveToLocalStorage();
+                    updateAllViews();
+                    showToast("Backup importado com sucesso!", "success");
+                } catch (err) {
+                    showToast("Erro ao ler arquivo de backup.", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function getSelectedMonthStr() {
+            return `${currentYear}-${currentMonthNum.toString().padStart(2, '0')}`;
+        }
+
+        function updateMonthDisplay() {
+            const monthsNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const display = document.getElementById('current-month-display');
+            if (display) display.textContent = `${monthsNames[currentMonthNum - 1]} de ${currentYear}`;
+        }
+
+        function navigateMonth(direction) {
+            if (direction === 1) {
+                currentMonthNum--;
+                if (currentMonthNum < 1) { currentMonthNum = 12; currentYear--; }
+            } else if (direction === -1) {
+                currentMonthNum++;
+                if (currentMonthNum > 12) { currentMonthNum = 1; currentYear++; }
+            }
+            updateMonthDisplay();
+            updateAllViews();
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `bg-slate-900 text-white flex items-center p-4 rounded-xl space-x-3 text-xs font-semibold shadow-md`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(pane => pane.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm'));
+            const activePane = document.getElementById(`pane-${tabId}`);
+            if (activePane) activePane.classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) activeBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+
+            if (tabId === 'patrimonio') renderPatrimonioChart();
+        }
+
+        function updateAllViews() {
+            updateMonthDisplay();
+            updateDashboardMetrics();
+            renderRecentTransactions();
+            renderTransactions();
+            renderDashboardCharts();
+            renderPatrimonioView();
+            renderGoalsView();
+        }
+
+        function updateDashboardMetrics() {
+            const currentMonth = getSelectedMonthStr();
+            const currentTxs = state.transactions.filter(tx => tx.date && tx.date.startsWith(currentMonth));
+            let totalIncome = 0, totalExpense = 0;
+            currentTxs.forEach(tx => {
+                if (tx.type === 'income') totalIncome += tx.amount;
+                else if (tx.type === 'expense') totalExpense += tx.amount;
+            });
+            if (document.getElementById('dash-income')) document.getElementById('dash-income').textContent = formatCurrency(totalIncome);
+            if (document.getElementById('dash-expense')) document.getElementById('dash-expense').textContent = formatCurrency(totalExpense);
+            if (document.getElementById('dash-balance')) document.getElementById('dash-balance').textContent = formatCurrency(totalIncome - totalExpense);
+
+            let totalPatrimonio = 0;
+            state.patrimonio.forEach(p => totalPatrimonio += p.amount);
+            if (document.getElementById('dash-patrimonio')) document.getElementById('dash-patrimonio').textContent = formatCurrency(totalPatrimonio);
+        }
+
+        function renderRecentTransactions() {
+            const currentMonth = getSelectedMonthStr();
+            let currentTxs = state.transactions.filter(tx => tx.date && tx.date.startsWith(currentMonth));
+            if (dashboardFilterType) currentTxs = currentTxs.filter(tx => tx.type === dashboardFilterType);
+            currentTxs = currentTxs.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
+            const table = document.getElementById('dash-recent-table');
+            if (!table) return;
+            table.innerHTML = currentTxs.map(tx => `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-4">${formatDateBR(tx.date)}</td>
+                    <td class="px-6 py-4 font-semibold">${tx.description}</td>
+                    <td class="px-6 py-4">${getCategoryPath(tx.category)}</td>
+                    <td class="px-6 py-4">${tx.type === 'income' ? 'Entrada' : 'Saída'}</td>
+                    <td class="px-6 py-4 text-right font-semibold ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}">${formatCurrency(tx.amount)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderTransactions() {
+            const table = document.getElementById('master-tx-table');
+            if (!table) return;
+            table.innerHTML = state.transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).map(tx => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="px-6 py-4">${formatDateBR(tx.date)}</td>
+                    <td class="px-6 py-4 font-semibold">${tx.description}</td>
+                    <td class="px-6 py-4">${tx.type === 'income' ? 'Entrada' : 'Saída'}</td>
+                    <td class="px-6 py-4 text-right font-semibold ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}">${formatCurrency(tx.amount)}</td>
+                    <td class="px-6 py-4 text-center"><button onclick="deleteTransaction('${tx.id}')" class="text-rose-600"><i class="fa-regular fa-trash-can"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPatrimonioView() {
+            const table = document.getElementById('pat-table-body');
+            const totalLabel = document.getElementById('pat-total-label');
+            if (!table || !totalLabel) return;
+            let total = 0;
+            table.innerHTML = state.patrimonio.map(p => {
+                total += p.amount;
+                return `
+                    <tr class="border-b">
+                        <td class="px-6 py-4">${formatDateBR(p.date)}</td>
+                        <td class="px-6 py-4 font-semibold">${p.description}</td>
+                        <td class="px-6 py-4">${p.category}</td>
+                        <td class="px-6 py-4 text-right font-bold text-blue-600">${formatCurrency(p.amount)}</td>
+                        <td class="px-6 py-4 text-center"><button onclick="deletePatrimonio('${p.id}')" class="text-rose-600"><i class="fa-regular fa-trash-can"></i></button></td>
+                    </tr>
+                `;
+            }).join('');
+            totalLabel.textContent = "Total: " + formatCurrency(total);
+        }
+
+        function renderPatrimonioChart() {
+            const ctx = document.getElementById('chart-patrimonio');
+            if (!ctx || typeof Chart === 'undefined') return;
+            if (chartPatrimonioInstance) chartPatrimonioInstance.destroy();
+            let total = 0;
+            const data = state.patrimonio.map(p => { total += p.amount; return total; });
+            const labels = state.patrimonio.map(p => formatDateBR(p.date));
+            chartPatrimonioInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels.length ? labels : ['Atual'], datasets: [{ data: data.length ? data : [0], borderColor: '#2563eb', fill: true, backgroundColor: 'rgba(37, 99, 235, 0.05)' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderGoalsView() {
+            const container = document.getElementById('goals-dreams-container');
+            if (!container) return;
+            container.innerHTML = state.longTermGoals.map(d => {
+                const pct = d.target > 0 ? Math.min((d.current / d.target) * 100, 100) : 0;
+                return `
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                        <h5 class="text-sm font-extrabold text-slate-800"><i class="fa-solid fa-bullseye text-blue-500 mr-2"></i>${d.name}</h5>
+                        <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden"><div class="bg-blue-600 h-2 rounded-full" style="width: ${pct}%"></div></div>
+                        <div class="flex justify-between text-xs font-bold text-slate-600">
+                            <span>Acumulado: ${formatCurrency(d.current)}</span>
+                            <span>Alvo: ${formatCurrency(d.target)} (${pct.toFixed(0)}%)</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderDashboardCharts() {
+            const currentMonth = getSelectedMonthStr();
+            const currentTxs = state.transactions.filter(tx => tx.date && tx.date.startsWith(currentMonth));
+            const filtered = currentTxs.filter(tx => tx.type === currentPieType);
+
+            const sums = {};
+            filtered.forEach(tx => {
+                const root = getRootCategory(tx.category);
+                const name = root ? root.name : 'Outros';
+                sums[name] = (sums[name] || 0) + tx.amount;
+            });
+
+            const labels = Object.keys(sums);
+            const data = Object.values(sums);
+            const colors = labels.map(name => {
+                const cat = state.categories.find(c => c.name === name);
+                return cat ? cat.color : '#10b981';
+            });
+
+            const ctx = document.getElementById('chart-categories');
+            const emptyEl = document.getElementById('chart-categories-empty');
+
+            if (ctx) {
+                if (data.length === 0) {
+                    if (emptyEl) emptyEl.classList.remove('hidden');
+                    if (chartCategoriesInstance) { chartCategoriesInstance.destroy(); chartCategoriesInstance = null; }
+                } else {
+                    if (emptyEl) emptyEl.classList.add('hidden');
+                    if (chartCategoriesInstance) chartCategoriesInstance.destroy();
+                    chartCategoriesInstance = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+                        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+                    });
+                }
+            }
+
+            const last6 = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(); d.setMonth(d.getMonth() - i);
+                last6.push(d.toISOString().substring(0, 7));
+            }
+            const incArr = Array(6).fill(0), expArr = Array(6).fill(0);
+            state.transactions.forEach(tx => {
+                if (tx.date) {
+                    const ym = tx.date.substring(0, 7);
+                    const idx = last6.indexOf(ym);
+                    if (idx !== -1) {
+                        if (tx.type === 'income') incArr[idx] += tx.amount;
+                        else if (tx.type === 'expense') expArr[idx] += tx.amount;
+                    }
+                }
+            });
+            const ctxCF = document.getElementById('chart-cashflow');
+            if (ctxCF) {
+                if (chartCashflowInstance) chartCashflowInstance.destroy();
+                chartCashflowInstance = new Chart(ctxCF, {
+                    type: 'bar',
+                    data: {
+                        labels: last6.map(m => m.split('-').reverse().join('/')),
+                        datasets: [
+                            { label: 'Receitas', data: incArr, backgroundColor: '#10b981', borderRadius: 4 },
+                            { label: 'Despesas', data: expArr, backgroundColor: '#ef4444', borderRadius: 4 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => 'R$ ' + v } } } }
+                });
+            }
+        }
+
+        function handleNewTransaction(event) {
+            event.preventDefault();
+            const description = document.getElementById('tx-description').value;
+            const amount = parseFloat(document.getElementById('tx-amount').value);
+            const date = document.getElementById('tx-date').value;
+            const type = document.getElementById('tx-type').value;
+
+            state.transactions.push({ id: 'tx_' + Date.now(), description, amount, date, type, category: 'cat_unidentified', recurrence: 'single' });
+            saveToLocalStorage();
+            updateAllViews();
+            showToast("Lançamento cadastrado com sucesso!");
+            event.target.reset();
+            document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function deleteTransaction(id) {
+            state.transactions = state.transactions.filter(t => t.id !== id);
+            saveToLocalStorage();
+            updateAllViews();
+            showToast("Lançamento removido.", "info");
+        }
+
+        function handleNewPatrimonio(event) {
+            event.preventDefault();
+            const category = document.getElementById('pat-category').value;
+            const description = document.getElementById('pat-desc').value;
+            const amount = parseFloat(document.getElementById('pat-amount').value);
+            const date = new Date().toISOString().split('T')[0];
+
+            state.patrimonio.push({ id: 'pat_' + Date.now(), category, description, amount, date });
+            saveToLocalStorage();
+            updateAllViews();
+            renderPatrimonioChart();
+            showToast("Ativo adicionado com sucesso!");
+            event.target.reset();
+        }
+
+        function deletePatrimonio(id) {
+            state.patrimonio = state.patrimonio.filter(p => p.id !== id);
+            saveToLocalStorage();
+            updateAllViews();
+            renderPatrimonioChart();
+            showToast("Ativo removido.", "info");
+        }
+
+        function formatCurrency(v) {
+            return typeof v === 'number' ? v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
+        }
+
+        function formatDateBR(dStr) {
+            if (!dStr) return '';
+            const p = dStr.split('-');
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : dStr;
+        }
+
+        // --- FIREBASE AUTH ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBj3aWxJUqhla7_QegFtBW1fesc5awbLc0",
+            authDomain: "controle-financeiro-fami-5972f.firebaseapp.com",
+            projectId: "controle-financeiro-fami-5972f",
+            storageBucket: "controle-financeiro-fami-5972f.firebasestorage.app",
+            messagingSenderId: "180397658983",
+            appId: "1:180397658983:web:cc6e4fc529640cd598d5c2"
+        };
+        
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            firebase.auth().onAuthStateChanged(user => {
+                const btn = document.getElementById('firebase-user-name');
+                if (user && btn) btn.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Conectado';
+            });
+        }
+
+        function firebaseSignIn() {
+            if (typeof firebase === 'undefined') {
+                showToast("Erro ao carregar Google Auth.", "error");
+                return;
+            }
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then(() => showToast("Conectado com o Google!", "success"))
+                .catch(err => showToast("Erro no login: " + err.message, "error"));
+        }
+    </script>
+</body>
+</html>
