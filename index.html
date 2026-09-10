@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#10b981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Financeiro Família">
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAOjklEQVR4nO3da3BU12EH8P+uVqsXeoAeKyQBEiAhJMKbGAKuqQlgbCBgd5LYNHaZ8bip42QS0kkztQ0Tp3GcuJlOQ2jrL45jD01w/QBsTA01j9qAwCDz1gOEJxRCK8HsCglpJe1uP7g4oL177t3de/dx9v+b0QfvOgvPueavo3Ofx4QoyfnwZ75otU2R4Vy5xRTpNiPSIMNLtxkdckM3ziBTIEYFW/eNMsQULD3DrduGGGQKlx7BNuvREYaZ9KBHjsL6jWCQySihjtYhj9AMMxkp1HyFFGiGmSIplJwFHWiGmSIp2LwFFWiGmaIhmNxpDjTDTNGkNX+aAs0wUyzQkkPVQDPMFEvU8igMNMNMsUiUy4CBZpgplgXKpy6XvolihWKgOTpTPFDKqV+gGWaKJ6PzyikHSeWuQHN0pnh0Z245QpNUGGiSypeB5nSD4tnt/HKEJqmYAI7OJA+O0CQVBpqkwkCTVBhokoqZB4QkE47QJBUGmqTCQJNUGGiSCgNNUmGgSSoMNEmFgSapMNAkFQaapMJAk1QYaJKKJdorDN1Pp9zn99lTTopgj0JPEwEAb7B8Y6IjilIOkwkCTVBhokgoDTVJhoEkqPMthgBRzEioy8lGVWaBY/sOyxWgbdKGhrwf1fXYM+7wR7qG8THxIVh8zMwuxvrAvaD+RXoDwjD0kmbWuvu70jOOJowV57I96+dh6O4QGDeyo3BjoMFpMZf108G8+Ufg1T0seFvT2314P/7DiN31z5GO2DvTr0MPEw0CFaY5uOzeX3Y2p6ru7bHvAM5Hch17eQWCAAAAAElFTkSuQmCC">
+    <title>Meu Controle Financeiro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4', 100: '#dcfce7', 500: '#10b981', 600: '#059669', 700: '#047857', 900: '#064e3b',
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .heading-font { font-family: 'Lexend', sans-serif; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800 pb-20 md:pb-0">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-brand-500 text-white p-2 rounded-xl shadow-md flex items-center justify-center">
+                        <i class="fa-solid fa-leaf text-sm"></i>
+                    </div>
+                    <div>
+                        <span class="heading-font text-base sm:text-lg font-bold tracking-tight text-slate-900 leading-none">Controle Família</span>
+                    </div>
+                </div>
+
+                <nav class="hidden md:flex space-x-1 bg-slate-100 p-1 rounded-xl">
+                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all bg-white text-slate-900 shadow-sm"><i class="fa-solid fa-chart-line mr-2"></i>Dashboard</button>
+                    <button onclick="switchTab('lancamentos')" id="tab-lancamentos" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-slate-900"><i class="fa-solid fa-list-check mr-2"></i>Lançamentos</button>
+                    <button onclick="switchTab('metas')" id="tab-metas" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-slate-900"><i class="fa-solid fa-bullseye mr-2"></i>Metas</button>
+                    <button onclick="switchTab('patrimonio')" id="tab-patrimonio" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-slate-900"><i class="fa-solid fa-vault mr-2"></i>Patrimônio</button>
+                    <button onclick="switchTab('configuracoes')" id="tab-configuracoes" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-600 hover:text-slate-900"><i class="fa-solid fa-sliders mr-2"></i>Configurações</button>
+                </nav>
+
+                <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-1 bg-slate-50 border border-slate-200 rounded-xl p-1 shadow-sm">
+                        <button onclick="navigateMonth(1)" class="p-1 hover:bg-slate-200 text-slate-500 rounded-lg text-xs w-7 h-7 flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
+                        <div class="flex flex-col items-center min-w-[90px]"><span id="current-month-display" class="px-1 text-xs font-bold text-slate-700 text-center"></span></div>
+                        <button onclick="navigateMonth(-1)" class="p-1 hover:bg-slate-200 text-slate-500 rounded-lg text-xs w-7 h-7 flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+
+                    <div id="firebase-auth-area">
+                        <button id="btn-firebase-auth" onclick="handleAuthClick()" class="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-xl transition shadow-sm">
+                            <i class="fa-brands fa-google text-xs"></i>
+                            <span id="firebase-btn-text">Sincronizar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barra de Navegação Inferior para Celular -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 px-2 py-1 flex justify-around items-center shadow-lg">
+        <button onclick="switchTab('dashboard')" id="mobile-tab-dashboard" class="mobile-tab flex flex-col items-center py-1.5 px-3 text-brand-600 font-semibold text-[10px]">
+            <i class="fa-solid fa-chart-line text-base mb-0.5"></i>Dashboard
+        </button>
+        <button onclick="switchTab('lancamentos')" id="mobile-tab-lancamentos" class="mobile-tab flex flex-col items-center py-1.5 px-3 text-slate-400 font-medium text-[10px]">
+            <i class="fa-solid fa-list-check text-base mb-0.5"></i>Lançamentos
+        </button>
+        <button onclick="switchTab('metas')" id="mobile-tab-metas" class="mobile-tab flex flex-col items-center py-1.5 px-3 text-slate-400 font-medium text-[10px]">
+            <i class="fa-solid fa-bullseye text-base mb-0.5"></i>Metas
+        </button>
+        <button onclick="switchTab('patrimonio')" id="mobile-tab-patrimonio" class="mobile-tab flex flex-col items-center py-1.5 px-3 text-slate-400 font-medium text-[10px]">
+            <i class="fa-solid fa-vault text-base mb-0.5"></i>Patrimônio
+        </button>
+        <button onclick="switchTab('configuracoes')" id="mobile-tab-configuracoes" class="mobile-tab flex flex-col items-center py-1.5 px-3 text-slate-400 font-medium text-[10px]">
+            <i class="fa-solid fa-sliders text-base mb-0.5"></i>Ajustes
+        </button>
+    </nav>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- DASHBOARD -->
+        <section id="pane-dashboard" class="tab-content space-y-6">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div onclick="filterDashboardByType('income')" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm cursor-pointer hover:border-emerald-400 transition">
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">Receitas</span>
+                    <h3 id="dash-income" class="heading-font text-lg sm:text-2xl font-bold text-slate-950">R$ 0,00</h3>
+                    <span class="text-[10px] text-emerald-600 font-medium block mt-1">Ver apenas receitas</span>
+                </div>
+                <div onclick="filterDashboardByType('expense')" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm cursor-pointer hover:border-rose-400 transition">
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">Despesas</span>
+                    <h3 id="dash-expense" class="heading-font text-lg sm:text-2xl font-bold text-slate-950">R$ 0,00</h3>
+                    <span class="text-[10px] text-rose-600 font-medium block mt-1">Ver apenas despesas</span>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">Saldo Líquido</span>
+                    <h3 id="dash-balance" class="heading-font text-lg sm:text-2xl font-bold text-slate-950">R$ 0,00</h3>
+                    <span class="text-[10px] text-slate-500 block mt-1">Resultado do mês</span>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">Patrimônio</span>
+                    <h3 id="dash-patrimonio" class="heading-font text-lg sm:text-2xl font-bold text-slate-950">R$ 0,00</h3>
+                    <span class="text-[10px] text-blue-600 font-medium block mt-1">Total declarado</span>
+                </div>
+            </div>
+
+            <!-- Painel Detalhado da Categoria ao Clicar no Gráfico -->
+            <div id="category-drilldown-panel" class="hidden bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b pb-3">
+                    <h4 id="drilldown-title" class="heading-font font-bold text-slate-900 text-base">Movimentações da Categoria</h4>
+                    <button onclick="closeDrilldown()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-semibold"><i class="fa-solid fa-arrow-left mr-1"></i> Voltar ao Gráfico Geral</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs sm:text-sm text-left">
+                        <thead class="bg-slate-50 border-b border-slate-200 font-semibold text-slate-500 uppercase text-[10px]">
+                            <tr>
+                                <th class="px-4 py-3">Data</th>
+                                <th class="px-4 py-3">Descrição</th>
+                                <th class="px-4 py-3">Subcategoria</th>
+                                <th class="px-4 py-3 text-right">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drilldown-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Gráfico de Pizza Interativo -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between h-[360px] lg:col-span-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <h4 id="pie-chart-title" class="heading-font font-semibold text-slate-900 text-sm">Despesas Consolidadas</h4>
+                            <p class="text-[9px] text-slate-400">Clique em uma fatia para ver os detalhes</p>
+                        </div>
+                        <div class="flex bg-slate-100 p-0.5 rounded-lg space-x-1">
+                            <button onclick="setPieChartType('expense')" id="btn-pie-expense" class="px-2 py-1 text-[10px] font-bold rounded bg-white text-slate-900 shadow-sm transition">Despesas</button>
+                            <button onclick="setPieChartType('income')" id="btn-pie-income" class="px-2 py-1 text-[10px] font-bold rounded text-slate-600 transition">Receitas</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-grow items-center min-h-0">
+                        <div class="relative h-full flex items-center justify-center min-h-[180px]">
+                            <canvas id="chart-categories" class="max-h-full max-w-full"></canvas>
+                            <div id="chart-categories-empty" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white/90">
+                                <span class="text-xs text-slate-400 text-center">Sem dados no período.</span>
+                            </div>
+                        </div>
+                        <div id="chart-categories-legend" class="flex flex-col space-y-1.5 overflow-y-auto max-h-[220px] text-xs pr-1"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between h-[360px] lg:col-span-2">
+                    <h4 class="heading-font font-semibold text-slate-900 text-sm mb-2">Histórico Recente (Receitas x Despesas)</h4>
+                    <div class="relative flex-grow min-h-0"><canvas id="chart-cashflow" class="w-full h-full"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-slate-150 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <h4 class="heading-font font-semibold text-slate-900 text-sm">Movimentações Recentes</h4>
+                        <span id="dash-filter-badge" class="hidden bg-brand-50 text-brand-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-200">
+                            Filtro <button onclick="clearDashboardFilter()" class="ml-1 text-brand-500">✕</button>
+                        </span>
+                    </div>
+                    <button onclick="switchTab('lancamentos')" class="text-xs text-brand-600 font-semibold flex items-center">Ver todos <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs sm:text-sm text-left">
+                        <thead class="bg-slate-50 border-b border-slate-200 font-semibold text-slate-500 uppercase text-[10px]">
+                            <tr>
+                                <th class="px-4 py-3">Data</th>
+                                <th class="px-4 py-3">Descrição</th>
+                                <th class="px-4 py-3">Categoria</th>
+                                <th class="px-4 py-3 text-right">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dash-recent-table" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- LANÇAMENTOS -->
+        <section id="pane-lancamentos" class="tab-content space-y-6 hidden">
+            <!-- Modal / Área de Pré-visualização de Importação (Checklist Interativo com Menu Pai/Sub) -->
+            <div id="import-preview-container" class="hidden bg-amber-50 border border-amber-300 rounded-2xl p-5 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-amber-200 pb-3">
+                    <div>
+                        <h3 class="heading-font font-bold text-amber-900 text-sm">🔍 Revisão do Extrato Importado (Checklist Linha por Linha)</h3>
+                        <p class="text-[11px] text-amber-700">Verifique os códigos limpos, ignore linhas falsas, escolha categorias (Pai ➔ Sub) e crie regras instantâneas.</p>
+                    </div>
+                    <div class="space-x-2">
+                        <button onclick="cancelImportPreview()" class="bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 px-3 py-1.5 rounded-xl text-xs font-semibold"><i class="fa-solid fa-arrow-left mr-1"></i> Voltar / Desfazer</button>
+                        <button onclick="confirmImportPreview()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-1.5 rounded-xl text-xs font-semibold shadow-sm"><i class="fa-solid fa-check mr-1"></i> Confirmar e Lançar no App</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-80">
+                    <table class="w-full text-xs sm:text-sm text-left bg-white rounded-xl overflow-hidden shadow-sm">
+                        <thead class="bg-amber-100 border-b border-amber-200 font-semibold text-amber-900 uppercase text-[10px]">
+                            <tr>
+                                <th class="px-3 py-2 text-center">Ignorar?</th>
+                                <th class="px-3 py-2">Data</th>
+                                <th class="px-3 py-2">Código / Descrição Limpa</th>
+                                <th class="px-3 py-2">Categoria (Pai ➔ Sub)</th>
+                                <th class="px-3 py-2 text-center">Criar Regra?</th>
+                                <th class="px-3 py-2 text-right">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="import-preview-table" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm lg:col-span-1 space-y-4">
+                    <h3 id="tx-form-title" class="heading-font font-semibold text-base text-slate-900 border-b pb-2">Novo Lançamento</h3>
+                    <form id="form-transaction" onsubmit="handleSaveTransaction(event)" class="space-y-3">
+                        <input type="hidden" id="tx-edit-id" value="">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tipo de Fluxo</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="border rounded-xl p-2 flex items-center justify-center space-x-1 cursor-pointer [&:has(input:checked)]:border-emerald-500 [&:has(input:checked)]:bg-emerald-50/30">
+                                    <input type="radio" name="tx-type" value="income" checked class="sr-only" onchange="initHierarchicalCategorySelect('tx-cat-wrapper', 'tx-cat-hidden', 'tx-cat-display')">
+                                    <span class="text-xs font-medium">Receita</span>
+                                </label>
+                                <label class="border rounded-xl p-2 flex items-center justify-center space-x-1 cursor-pointer [&:has(input:checked)]:border-rose-500 [&:has(input:checked)]:bg-rose-50/30">
+                                    <input type="radio" name="tx-type" value="expense" class="sr-only" onchange="initHierarchicalCategorySelect('tx-cat-wrapper', 'tx-cat-hidden', 'tx-cat-display')">
+                                    <span class="text-xs font-medium">Despesa</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Descrição</label>
+                            <input type="text" id="tx-description" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Valor (R$)</label>
+                                <input type="number" step="0.01" id="tx-amount" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Data</label>
+                                <input type="date" id="tx-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                            </div>
+                        </div>
+
+                        <!-- Novo Seletor Hierárquico Pai ➔ Sub -->
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Categoria</label>
+                            <input type="hidden" id="tx-cat-hidden" value="cat_unidentified">
+                            <div class="relative">
+                                <div id="tx-cat-display" onclick="toggleParentCategoryMenu('tx-cat-wrapper', true)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs cursor-pointer flex justify-between items-center">
+                                    <span id="tx-cat-display-text">Selecione uma categoria...</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                                </div>
+                                <div id="tx-cat-wrapper" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto z-50 p-2 space-y-1"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-2 pt-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                            <input type="checkbox" id="tx-is-fixed" class="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer">
+                            <label for="tx-is-fixed" class="text-xs font-semibold text-slate-700 cursor-pointer">Marcar como Gasto Fixo / Essencial</label>
+                        </div>
+                        <div class="flex space-x-2 pt-1">
+                            <button type="button" id="btn-cancel-edit-tx" onclick="resetTxForm()" class="hidden w-1/3 border border-slate-200 text-slate-600 font-semibold py-2.5 rounded-xl text-xs">Cancelar</button>
+                            <button type="submit" id="btn-submit-tx" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2.5 rounded-xl text-xs shadow-md">Registrar Lançamento</button>
+                        </div>
+                    </form>
+
+                    <!-- Importador de Extrato via PC (CSV ou PDF) -->
+                    <div class="border-t pt-4 space-y-2">
+                        <h4 class="heading-font font-semibold text-xs text-slate-900">📂 Importar Extrato (CSV ou PDF)</h4>
+                        <p class="text-[10px] text-slate-500">Selecione o arquivo do banco/fatura:</p>
+                        <input type="file" id="statement-file-input" accept=".csv, .pdf" onchange="handleFileImport(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white hover:file:bg-slate-900 cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden lg:col-span-2 flex flex-col">
+                    <div class="p-4 sm:p-6 border-b border-slate-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <h4 class="heading-font font-semibold text-slate-900 text-sm">Extrato Consolidado</h4>
+                        <div class="flex items-center space-x-2 text-xs flex-wrap">
+                            <input type="text" id="master-search" oninput="renderTransactions()" placeholder="🔍 Pesquisar..." class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 w-32 sm:w-36 text-xs">
+                            <select id="master-filter-month" onchange="renderTransactions()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs">
+                                <option value="">Todos os Meses</option>
+                                <option value="01">Janeiro</option>
+                                <option value="02">Fevereiro</option>
+                                <option value="03">Março</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Maio</option>
+                                <option value="06">Junho</option>
+                                <option value="07">Julho</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                            <select id="master-filter-type" onchange="renderTransactions()" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs">
+                                <option value="">Todos Tipos</option>
+                                <option value="income">Receitas</option>
+                                <option value="expense">Despesas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto flex-grow">
+                        <table class="w-full text-xs sm:text-sm text-left">
+                            <thead class="bg-slate-50 border-b border-slate-200 font-semibold text-slate-500 uppercase text-[10px]">
+                                <tr>
+                                    <th class="px-4 py-3">Data</th>
+                                    <th class="px-4 py-3">Descrição</th>
+                                    <th class="px-4 py-3">Categoria</th>
+                                    <th class="px-4 py-3 text-center">Tipo</th>
+                                    <th class="px-4 py-3 text-right">Valor</th>
+                                    <th class="px-4 py-3 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="master-tx-table" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- METAS -->
+        <section id="pane-metas" class="tab-content space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                    <h3 class="heading-font font-semibold text-base text-slate-900 border-b pb-2">Tetos e Metas</h3>
+                    
+                    <form onsubmit="handleSaveGoal(event)" class="space-y-3 bg-slate-50 p-4 rounded-xl">
+                        <input type="hidden" id="goal-edit-id" value="">
+                        <h4 class="text-[10px] font-bold uppercase text-slate-600">🎯 Teto de Gastos por Categoria</h4>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Categoria</label>
+                            <input type="hidden" id="goal-cat-hidden" value="">
+                            <div class="relative">
+                                <div id="goal-cat-display" onclick="toggleParentCategoryMenu('goal-cat-wrapper', true)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs cursor-pointer flex justify-between items-center">
+                                    <span id="goal-cat-display-text">Selecione uma categoria...</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                                </div>
+                                <div id="goal-cat-wrapper" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto z-50 p-2 space-y-1"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Limite Máximo Mensal (R$)</label>
+                            <input type="number" step="0.01" id="goal-amount" required placeholder="500.00" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs">
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="button" id="btn-cancel-edit-goal" onclick="resetGoalForm()" class="hidden w-1/3 border border-slate-200 text-slate-600 font-semibold py-2 rounded-lg text-xs">Cancelar</button>
+                            <button type="submit" id="btn-submit-goal" class="w-full bg-brand-500 text-white font-semibold py-2 rounded-lg text-xs">Salvar Teto</button>
+                        </div>
+                    </form>
+
+                    <form onsubmit="handleSaveDream(event)" class="space-y-3 bg-slate-50 p-4 rounded-xl">
+                        <input type="hidden" id="dream-edit-id" value="">
+                        <h4 class="text-[10px] font-bold uppercase text-slate-600">💰 Meta de Juntar Dinheiro</h4>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nome da Meta</label>
+                            <input type="text" id="dream-name" required placeholder="Viagem dia X" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Alvo (R$)</label>
+                                <input type="number" step="0.01" id="dream-target" required placeholder="10000" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Guardado (R$)</label>
+                                <input type="number" step="0.01" id="dream-current" required placeholder="0" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs">
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="button" id="btn-cancel-edit-dream" onclick="resetDreamForm()" class="hidden w-1/3 border border-slate-200 text-slate-600 font-semibold py-2 rounded-lg text-xs">Cancelar</button>
+                            <button type="submit" id="btn-submit-dream" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg text-xs">Salvar Meta</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                        <h3 class="heading-font font-semibold text-sm text-slate-900 border-b pb-2 mb-3">Progresso Atual</h3>
+                        <div id="goals-dreams-container" class="space-y-3"></div>
+                    </div>
+
+                    <!-- Módulo de Inteligência Financeira e Economia -->
+                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-sm space-y-3">
+                        <h3 class="heading-font font-semibold text-sm text-emerald-400 border-b border-slate-700 pb-2 flex items-center">
+                            <i class="fa-solid fa-brain mr-2"></i> Inteligência Financeira & Economia
+                        </h3>
+                        <p class="text-[11px] text-slate-300">Análise automática dos seus gastos essenciais vs. não essenciais para ajudar você a economizar:</p>
+                        <div id="smart-insights-container" class="space-y-2 text-xs text-slate-200">
+                            <p class="text-slate-400 italic text-[11px]">Nenhuma despesa registrada neste mês.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PATRIMÔNIO -->
+        <section id="pane-patrimonio" class="tab-content space-y-6 hidden">
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                <h3 id="pat-form-title" class="heading-font font-semibold text-base text-slate-900 mb-3">Declarar / Atualizar Cofrinho (Ativo)</h3>
+                <form onsubmit="handleSavePatrimonio(event)" class="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
+                    <input type="hidden" id="pat-edit-id" value="">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Categoria</label>
+                        <select id="pat-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                            <option value="Dinheiro">Dinheiro / Conta</option>
+                            <option value="Investimentos">Investimentos (ex: XP, C6)</option>
+                            <option value="Bens Físicos">Bens Físicos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nome do Cofrinho</label>
+                        <input type="text" id="pat-desc" required placeholder="Ex: Investimento XP" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Valor (R$)</label>
+                        <input type="number" step="0.01" id="pat-amount" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Data da Atualização</label>
+                        <input type="date" id="pat-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                    </div>
+                    <div class="flex space-x-2">
+                        <button type="button" id="btn-cancel-edit-pat" onclick="resetPatForm()" class="hidden border border-slate-200 text-slate-600 font-semibold py-2 px-3 rounded-xl text-xs">Cancelar</button>
+                        <button type="submit" id="btn-submit-pat" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl text-xs">Salvar / Registrar Aporte</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Gráfico de Evolução Temporal Consolidado por Dia -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between h-[320px]">
+                <h4 class="heading-font font-semibold text-slate-900 text-sm">Evolução Consolidada do Patrimônio ao Longo do Tempo</h4>
+                <div class="relative flex-grow min-h-0"><canvas id="chart-patrimonio" class="w-full h-full"></canvas></div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-slate-150 flex items-center justify-between">
+                    <h4 class="heading-font font-semibold text-slate-900 text-sm">Cofrinhos Declarados e Histórico</h4>
+                    <span id="pat-total-label" class="heading-font font-bold text-base text-blue-600">Total: R$ 0,00</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs sm:text-sm text-left">
+                        <thead class="bg-slate-50 border-b border-slate-200 font-semibold text-slate-500 uppercase text-[10px]">
+                            <tr>
+                                <th class="px-4 py-3">Data</th>
+                                <th class="px-4 py-3">Cofrinho / Ativo</th>
+                                <th class="px-4 py-3">Categoria</th>
+                                <th class="px-4 py-3 text-right">Valor</th>
+                                <th class="px-4 py-3 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pat-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Calculadora de Aporte Compacta -->
+            <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <h4 class="heading-font font-semibold text-base text-emerald-400"><i class="fa-solid fa-calculator mr-2"></i>Calculadora de Aporte</h4>
+                    <p class="text-[11px] text-slate-300">Descubra quanto precisa guardar por mês para atingir sua meta patrimonial.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">Patrimônio Atual</span>
+                        <span id="calc-pat-atual" class="font-bold text-sm">R$ 0,00</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">Meta (R$)</span>
+                        <input type="number" id="calc-meta-val" value="500000" oninput="calcularAporte()" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-white w-32 font-bold text-xs">
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">Prazo (Anos)</span>
+                        <input type="number" id="calc-anos" value="3" min="1" max="30" oninput="calcularAporte()" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-white w-16 text-xs">
+                    </div>
+                    <div class="bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-slate-400 block">Aporte Necessário</span>
+                        <h3 id="calc-resultado" class="heading-font text-base font-extrabold text-emerald-400">R$ 0,00 / mês</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONFIGURAÇÕES -->
+        <section id="pane-configuracoes" class="tab-content space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                    <h3 class="heading-font font-semibold text-sm text-slate-900 border-b pb-2 mb-3">Gerenciador de Categorias (Pai / Sub)</h3>
+                    <form onsubmit="handleSaveCategory(event)" class="space-y-3 bg-slate-50 p-4 rounded-xl">
+                        <input type="hidden" id="cat-edit-id" value="">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Nome da Categoria</label>
+                            <input type="text" id="cat-new-name" required placeholder="Ex: Supermercado" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tipo</label>
+                                <select id="cat-new-type" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs">
+                                    <option value="expense">Despesa</option>
+                                    <option value="income">Receita</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Pertence à (Pai)</label>
+                                <select id="cat-new-parent" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs">
+                                    <option value="">(Nenhuma - Principal)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="button" id="btn-cancel-edit-cat" onclick="resetCatForm()" class="hidden w-1/3 border border-slate-200 text-slate-600 font-semibold py-2 rounded-lg text-xs">Cancelar</button>
+                            <button type="submit" id="btn-submit-cat" class="w-full bg-brand-500 text-white font-semibold py-2 rounded-lg text-xs">Salvar Categoria</button>
+                        </div>
+                    </form>
+                    <div id="settings-categories-tree-container" class="space-y-1.5 max-h-60 overflow-y-auto"></div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                    <h3 class="heading-font font-semibold text-sm text-slate-900 border-b pb-2 mb-3">Regras Automáticas</h3>
+                    <form onsubmit="handleSaveRule(event)" class="space-y-3 bg-slate-50 p-4 rounded-xl">
+                        <input type="hidden" id="rule-edit-id" value="">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Palavra-Chave no Extrato</label>
+                            <input type="text" id="rule-keyword" required placeholder="EX: CONDOMART24H" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs uppercase font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Categoria Correspondente</label>
+                            <input type="hidden" id="rule-cat-hidden" value="">
+                            <div class="relative">
+                                <div id="rule-cat-display" onclick="toggleParentCategoryMenu('rule-cat-wrapper', true)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs cursor-pointer flex justify-between items-center">
+                                    <span id="rule-cat-display-text">Selecione uma categoria...</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                                </div>
+                                <div id="rule-cat-wrapper" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50 p-2 space-y-1"></div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="button" id="btn-cancel-edit-rule" onclick="resetRuleForm()" class="hidden w-1/3 border border-slate-200 text-slate-600 font-semibold py-2 rounded-lg text-xs">Cancelar</button>
+                            <button type="submit" id="btn-submit-rule" class="w-full bg-brand-500 text-white font-semibold py-2 rounded-lg text-xs">Salvar Regra</button>
+                        </div>
+                    </form>
+                    <div id="rules-list-container" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+
+                    <div class="border-t pt-4 space-y-2">
+                        <h3 class="heading-font font-semibold text-sm text-slate-900 border-b pb-1 mb-2">Backup Completo</h3>
+                        <button onclick="exportBackup()" class="w-full bg-brand-500 text-white font-semibold py-2.5 px-4 rounded-xl text-xs shadow-md">Exportar Backup (.json)</button>
+                        <button onclick="document.getElementById('backup-loader').click()" class="w-full border border-slate-200 text-slate-700 font-semibold py-2.5 px-4 rounded-xl text-xs">Importar Backup</button>
+                        <input type="file" id="backup-loader" accept=".json" class="hidden" onchange="importBackup(event)">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast-container" class="fixed bottom-20 right-5 z-50 space-y-2"></div>
+
+    <script>
+        let state = { transactions: [], categories: [], patrimonio: [], rules: [], goals: [], longTermGoals: [], investmentPercent: 10 };
+        let tempImportedTxs = [];
+
+        const defaultCategories = [
+            { id: "cat_unidentified", name: "Não Identificado", type: "expense", color: "#64748b", parentId: null },
+            { id: "cat_empresa_caio", name: "Empresa Caio", type: "income", color: "#10b981", parentId: null },
+            { id: "cat_pro_labore", name: "Pró-Labore", type: "income", color: "#059669", parentId: "cat_empresa_caio" },
+            { id: "cat_moradia", name: "Moradia", type: "expense", color: "#f59e0b", parentId: null },
+            { id: "cat_moradia_aluguel", name: "Aluguel", type: "expense", color: "#fbbf24", parentId: "cat_moradia" },
+            { id: "cat_moradia_condominio", name: "Condomínio", type: "expense", color: "#fbbf24", parentId: "cat_moradia" },
+            { id: "cat_transporte", name: "Transporte", type: "expense", color: "#3b82f6", parentId: null },
+            { id: "cat_alimentacao", name: "Alimentação", type: "expense", color: "#ef4444", parentId: null },
+            { id: "cat_alimentacao_supermercado", name: "Supermercado", type: "expense", color: "#f87171", parentId: "cat_alimentacao" },
+            { id: "cat_alimentacao_restaurante", name: "Restaurante", type: "expense", color: "#f87171", parentId: "cat_alimentacao" },
+            { id: "cat_alimentacao_mercadinho", name: "Mercadinho", type: "expense", color: "#f87171", parentId: "cat_alimentacao" },
+            { id: "cat_educacao", name: "Educação", type: "expense", color: "#8b5cf6", parentId: null },
+            { id: "cat_lazer", name: "Lazer", type: "expense", color: "#ec4899", parentId: null },
+            { id: "cat_viagens", name: "Viagens", type: "expense", color: "#06b6d4", parentId: null },
+            { id: "cat_saude", name: "Saúde", type: "expense", color: "#10b981", parentId: null },
+            { id: "cat_pessoal", name: "Pessoal", type: "expense", color: "#d946ef", parentId: null },
+            { id: "cat_investimentos", name: "Aplicações & Investimentos", type: "expense", color: "#2563eb", parentId: null }
+        ];
+
+        let chartCategoriesInstance = null;
+        let chartCashflowInstance = null;
+        let chartPatrimonioInstance = null;
+        let currentPieType = 'expense';
+        let dashboardFilterType = null;
+        let editingTxId = null;
+        let drilldownCategoryName = null;
+
+        const today = new Date();
+        let currentYear = today.getFullYear();
+        let currentMonthNum = today.getMonth() + 1;
+
+        function getCategoryPath(catId) {
+            const cat = state.categories.find(c => c.id === catId);
+            if (!cat) return "Sem Categoria";
+            if (!cat.parentId) return cat.name;
+            return getCategoryPath(cat.parentId) + " ➔ " + cat.name;
+        }
+
+        function filterDashboardByType(type) {
+            dashboardFilterType = type;
+            const badge = document.getElementById('dash-filter-badge');
+            if (badge) badge.classList.remove('hidden');
+            renderRecentTransactions();
+            renderTransactions();
+        }
+
+        function clearDashboardFilter() {
+            dashboardFilterType = null;
+            const badge = document.getElementById('dash-filter-badge');
+            if (badge) badge.classList.add('hidden');
+            renderRecentTransactions();
+            renderTransactions();
+        }
+
+        function getRootCategory(catId) {
+            const cat = state.categories.find(c => c.id === catId);
+            if (!cat) return null;
+            if (!cat.parentId) return cat;
+            return getRootCategory(cat.parentId);
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.relative')) {
+                document.querySelectorAll('[id$="-wrapper"]').forEach(el => {
+                    if (!el.id.includes('preview')) el.classList.add('hidden');
+                });
+            }
+        });
+
+        function initApp() {
+            try {
+                if (localStorage.getItem('moni_transactions_v2')) {
+                    state.transactions = JSON.parse(localStorage.getItem('moni_transactions_v2')) || [];
+                    state.categories = JSON.parse(localStorage.getItem('moni_categories_v2')) || defaultCategories;
+                    state.patrimonio = JSON.parse(localStorage.getItem('moni_patrimonio_v2')) || [];
+                    state.rules = JSON.parse(localStorage.getItem('moni_rules_v2')) || [];
+                    state.goals = JSON.parse(localStorage.getItem('moni_goals_v2')) || [];
+                    state.longTermGoals = JSON.parse(localStorage.getItem('moni_longterm_goals_v2')) || [];
+                } else {
+                    state.categories = [...defaultCategories];
+                    saveToLocalStorage();
+                }
+
+                if (document.getElementById('tx-date')) document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
+                if (document.getElementById('pat-date')) document.getElementById('pat-date').value = new Date().toISOString().split('T')[0];
+                updateMonthDisplay();
+                updateAllViews();
+                populateDropdowns();
+                showToast("Controle Financeiro pronto!", "success");
+            } catch (err) {
+                console.error("Erro na inicialização:", err);
+            }
+        }
+
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('moni_transactions_v2', JSON.stringify(state.transactions));
+                localStorage.setItem('moni_categories_v2', JSON.stringify(state.categories));
+                localStorage.setItem('moni_patrimonio_v2', JSON.stringify(state.patrimonio));
+                localStorage.setItem('moni_rules_v2', JSON.stringify(state.rules));
+                localStorage.setItem('moni_goals_v2', JSON.stringify(state.goals));
+                localStorage.setItem('moni_longterm_goals_v2', JSON.stringify(state.longTermGoals));
+                
+                syncToCloud();
+            } catch (e) { console.error(e); }
+        }
+
+        function exportBackup() {
+            const jsonString = JSON.stringify(state, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meu_financeiro_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Backup exportado!", "success");
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    state.transactions = parsed.transactions || [];
+                    state.categories = parsed.categories || defaultCategories;
+                    state.patrimonio = parsed.patrimonio || [];
+                    state.rules = parsed.rules || [];
+                    state.goals = parsed.goals || [];
+                    state.longTermGoals = parsed.longTermGoals || [];
+                    saveToLocalStorage();
+                    updateAllViews();
+                    populateDropdowns();
+                    showToast("Backup importado com sucesso!", "success");
+                } catch (err) {
+                    showToast("Erro ao ler arquivo de backup.", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function getSelectedMonthStr() {
+            return `${currentYear}-${currentMonthNum.toString().padStart(2, '0')}`;
+        }
+
+        function updateMonthDisplay() {
+            const monthsNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const display = document.getElementById('current-month-display');
+            if (display) display.textContent = `${monthsNames[currentMonthNum - 1]} de ${currentYear}`;
+        }
+
+        function navigateMonth(direction) {
+            if (direction === 1) {
+                currentMonthNum--;
+                if (currentMonthNum < 1) { currentMonthNum = 12; currentYear--; }
+            } else if (direction === -1) {
+                currentMonthNum++;
+                if (currentMonthNum > 12) { currentMonthNum = 1; currentYear++; }
+            }
+            updateMonthDisplay();
+            updateAllViews();
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `bg-slate-900 text-white flex items-center p-3 rounded-xl space-x-2 text-xs font-semibold shadow-md`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(pane => pane.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm'));
+            document.querySelectorAll('.mobile-tab').forEach(btn => {
+                btn.classList.remove('text-brand-600', 'font-semibold');
+                btn.classList.add('text-slate-400', 'font-medium');
+            });
+
+            const activePane = document.getElementById(`pane-${tabId}`);
+            if (activePane) activePane.classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) activeBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+            const activeMob = document.getElementById(`mobile-tab-${tabId}`);
+            if (activeMob) {
+                activeMob.classList.remove('text-slate-400', 'font-medium');
+                activeMob.classList.add('text-brand-600', 'font-semibold');
+            }
+
+            if (tabId === 'patrimonio') { renderPatrimonioChart(); calcularAporte(); }
+            if (tabId === 'configuracoes') { renderCategoriesSettings(); renderRulesList(); }
+            if (tabId === 'metas') { renderGoalsView(); renderSmartInsights(); }
+        }
+
+        function updateAllViews() {
+            updateMonthDisplay();
+            updateDashboardMetrics();
+            renderRecentTransactions();
+            renderTransactions();
+            renderDashboardCharts();
+            renderPatrimonioView();
+            renderGoalsView();
+            renderSmartInsights();
+            populateDropdowns();
+            calcularAporte();
+        }
+
+        function updateDashboardMetrics() {
+            const currentMonth = getSelectedMonthStr();
+            const currentTxs = state.transactions.filter(tx => tx.date && tx.date.startsWith(currentMonth));
+            let totalIncome = 0, totalExpense = 0;
+            currentTxs.forEach(tx => {
+                if (tx.type === 'income') totalIncome += tx.amount;
+                else if (tx.type === 'expense') totalExpense += tx.amount;
+            });
+            if (document.getElementById('dash-income')) document.getElementById('dash-income').textContent = formatCurrency(totalIncome);
+            if (document.getElementById('dash-expense')) document.getElementById('dash-expense').textContent = formatCurrency(totalExpense);
+            if (document.getElementById('dash-balance')) document.getElementById('dash-balance').textContent = formatCurrency(totalIncome - totalExpense);
+
+            let totalPatrimonio = state.patrimonio.reduce((sum, p) => sum + p.amount, 0);
+            if (document.getElementById('dash-patrimonio')) document.getElementById('dash-patrimonio').textContent = formatCurrency(totalPatrimonio);
+        }
+
+        function renderRecentTransactions() {
+            const currentMonth = getSelectedMonthStr();
+            let currentTxs = state.transactions.filter(tx => tx.date && tx.date.startsWith(currentMonth));
+            if (dashboardFilterType) currentTxs = currentTxs.filter(tx => tx.type === dashboardFilterType);
+            currentTxs = currentTxs.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
+            const table = document.getElementById('dash-recent-table');
+            if (!table) return;
+            table.innerHTML = currentTxs.map(tx => `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-3">${formatDateBR(tx.date)}</td>
+                    <td class="px-4 py-3 font-semibold">${tx.description}</td>
+                    <td class="px-4 py-3">${getCategoryPath(tx.category)}</td>
+                    <td class="px-4 py-3 text-right font-semibold ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}">${formatCurrency(tx.amount)}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="4" class="text-center py-4 text-slate-400 text-xs">Nenhuma movimentação recente.</td></tr>`;
+        }
+
+        function renderTransactions() {
+            const table = document.getElementById('master-tx-table');
+            const searchVal = (document.getElementById('master-search')?.value || '').toLowerCase();
+            const filterType = document.getElementById('master-filter-type')?.value || '';
+            const filterMonth = document.getElementById('master-filter-month')?.value || '';
+            if (!table) return;
+
+            let filtered = state.transactions.filter(tx => {
+                const matchSearch = tx.description.toLowerCase().includes(searchVal) || getCategoryPath(tx.category).toLowerCase().includes(searchVal);
+                const matchType = filterType ? tx.type === filterType : true;
+                let matchMonth = true;
+                if (filterMonth && tx.date) {
+                    matchMonth = tx.date.split('-')[1] === filterMonth;
+                }
+                return matchSearch && matchType && matchMonth;
+            });
+
+            table.innerHTML = filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).map(tx => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="px-4 py-3">${formatDateBR(tx.date)}</td>
+                    <td class="px-4 py-3 font-semibold">${tx.description}</td>
+                    <td class="px-4 py-3">${getCategoryPath(tx.category)}</td>
+                    <td class="px-4 py-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${tx.type === 'income' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${tx.type === 'income' ? 'Receita' : 'Despesa'}</span></td>
+                    <td class="px-4 py-3 text-right font-semibold ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}">${formatCurrency(tx.amount)}</td>
+                    <td class="px-4 py-3 text-center space-x-2">
+                        <button onclick="startEditTransaction('${tx.id}')" class="text-amber-600 p-1"><i class="fa-solid fa-pencil"></i></button>
+                        <button onclick="deleteTransaction('${tx.id}')" class="text-rose-600 p-1"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="6" class="text-center py-4 text-slate-400 text-xs">Nenhum lançamento encontrado.</td></tr>`;
+        }
+
+        function handleSaveTransaction(event) {
+            event.preventDefault();
+            const description = document.getElementById('tx-description').value.toUpperCase();
+            const amount = parseFloat(document.getElementById('tx-amount').value);
+            const date = document.getElementById('tx-date').value;
+            const category = document.getElementById('tx-cat-hidden').value || 'cat_unidentified';
+            const type = document.querySelector('input[name="tx-type"]:checked').value;
+            const isFixed = document.getElementById('tx-is-fixed').checked;
+            const editId = document.getElementById('tx-edit-id').value;
+
+            if (editId) {
+                state.transactions = state.transactions.map(t => t.id === editId ? { ...t, description, amount, date, category, type, isFixed } : t);
+                showToast("Lançamento atualizado!");
+            } else {
+                state.transactions.push({ id: 'tx_' + Date.now(), description, amount, date, category, type, isFixed });
+                showToast("Lançamento cadastrado!");
+            }
+            saveToLocalStorage();
+            updateAllViews();
+            resetTxForm();
+        }
+
+        function deleteTransaction(id) {
+            state.transactions = state.transactions.filter(t => t.id !== id);
+            saveToLocalStorage();
+            updateAllViews();
+            showToast("Lançamento excluído.", "info");
+        }
+
+        function startEditTransaction(id) {
+            const tx = state.transactions.find(t => t.id === id);
+            if (!tx) return;
+            editingTxId = id;
+            document.getElementById('tx-edit-id').value = id;
+            document.getElementById('tx-description').value = tx.description;
+            document.getElementById('tx-amount').value = tx.amount;
+            document.getElementById('tx-date').value = tx.date;
+            document.getElementById('tx-is-fixed').checked = tx.isFixed || false;
+            const radios = document.querySelectorAll('input[name="tx-type"]');
+            radios.forEach(r => r.checked = (r.value === tx.type));
+            
+            setCategorySelection('tx-cat-wrapper', 'tx-cat-hidden', 'tx-cat-display-text', tx.category);
+
+            document.getElementById('tx-form-title').textContent = "Editar Lançamento";
+            document.getElementById('btn-submit-tx').textContent = "Salvar Alterações";
+            document.getElementById('btn-cancel-edit-tx').classList.remove('hidden');
+        }
+
+        function resetTxForm() {
+            editingTxId = null;
+            document.getElementById('form-transaction').reset();
+            document.getElementById('tx-edit-id').value = '';
+            document.getElementById('tx-form-title').textContent = "Novo Lançamento";
+            document.getElementById('btn-submit-tx').textContent = "Registrar Lançamento";
+            document.getElementById('btn-cancel-edit-tx').classList.add('hidden');
+            document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('tx-is-fixed').checked = false;
+            setCategorySelection('tx-cat-wrapper', 'tx-cat-hidden', 'tx-cat-display-text', 'cat_unidentified');
+        }
+
+        function populateDropdowns() {
+            initHierarchicalCategorySelect('tx-cat-wrapper', 'tx-cat-hidden', 'tx-cat-display-text', document.getElementById('tx-cat-hidden').value || 'cat_unidentified');
+            initHierarchicalCategorySelect('goal-cat-wrapper', 'goal-cat-hidden', 'goal-cat-display-text', document.getElementById('goal-cat-hidden').value || '');
+            initHierarchicalCategorySelect('rule-cat-wrapper', 'rule-cat-hidden', 'rule-cat-display-text', document.getElementById('rule-cat-hidden').value || '');
+            
+            const selectParent = document.getElementById('cat-new-parent');
+            if (selectParent) {
+                selectParent.innerHTML = '<option value="">(Nenhuma - Principal)</option>' + state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            }
+        }
+
+        // --- SISTEMA HIERÁRQUICO VISUAL DE CATEGORIAS (PAI ➔ SUB) ---
+        function initHierarchicalCategorySelect(wrapperId, hiddenId, displayTextId, selectedCatId = '') {
+            const wrapper = document.getElementById(wrapperId);
+            const hidden = document.getElementById(hiddenId);
+            const displayText = document.getElementById(displayTextId);
+            if (!wrapper || !hidden || !displayText) return;
+
+            const type = document.querySelector('input[name="tx-type"]:checked')?.value || 'expense';
+            const isExpenseOnly = wrapperId.includes('goal');
+            let cats = state.categories.filter(c => isExpenseOnly ? c.type === 'expense' : c.type === type);
+
+            if (selectedCatId) {
+                hidden.value = selectedCatId;
+                const found = state.categories.find(c => c.id === selectedCatId);
+                if (found) displayText.textContent = getCategoryPath(found.id);
+            } else if (!hidden.value && cats.length > 0) {
+                hidden.value = cats[0].id;
+                displayText.textContent = getCategoryPath(cats[0].id);
+            }
+
+            renderParentCategoriesMenu(wrapperId, hiddenId, displayTextId, cats);
+        }
+
+        function renderParentCategoriesMenu(wrapperId, hiddenId, displayTextId, cats) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
+
+            const parents = cats.filter(c => !c.parentId);
+            let html = '';
+
+            parents.forEach(p => {
+                const subCats = cats.filter(c => c.parentId === p.id);
+                if (subCats.length > 0) {
+                    html += `
+                        <div class="space-y-1 mb-1">
+                            <div class="px-2 py-1.5 font-bold text-slate-900 bg-slate-100 rounded-lg text-xs flex justify-between items-center cursor-pointer select-none" onclick="toggleSubCategoryList(this)">
+                                <span>📁 ${p.name}</span>
+                                <i class="fa-solid fa-chevron-right text-[9px] text-slate-500 transition-transform"></i>
+                            </div>
+                            <div class="hidden pl-3 space-y-1 border-l-2 border-brand-200 ml-2 py-1">
+                                <div onclick="selectCategoryFinal('${wrapperId}', '${hiddenId}', '${displayTextId}', '${p.id}', '${getCategoryPath(p.id).replace(/'/g, "\\'")}')" class="px-2 py-1 hover:bg-brand-50 rounded cursor-pointer text-xs font-semibold text-slate-800">
+                                    ⭐ ${p.name} (Principal)
+                                </div>
+                                ${subCats.map(s => `
+                                    <div onclick="selectCategoryFinal('${wrapperId}', '${hiddenId}', '${displayTextId}', '${s.id}', '${getCategoryPath(s.id).replace(/'/g, "\\'")}')" class="px-2 py-1 hover:bg-brand-50 rounded cursor-pointer text-xs text-slate-700">
+                                        └─ ${s.name}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div onclick="selectCategoryFinal('${wrapperId}', '${hiddenId}', '${displayTextId}', '${p.id}', '${getCategoryPath(p.id).replace(/'/g, "\\'")}')" class="px-2 py-1.5 font-bold text-slate-900 bg-slate-50 hover:bg-brand-50 rounded-lg text-xs cursor-pointer mb-1">
+                            📁 ${p.name}
+                        </div>
+                    `;
+                }
+            });
+
+            wrapper.innerHTML = html || '<div class="p-2 text-xs text-slate-400 text-center">Nenhuma categoria encontrada.</div>';
+        }
+
+        function toggleSubCategoryList(headerEl) {
+            const subContainer = headerEl.nextElementSibling;
+            const icon = headerEl.querySelector('i');
+            if (subContainer.classList.contains('hidden')) {
+                subContainer.classList.remove('hidden');
+                icon.classList.add('rotate-90');
+            } else {
+                subContainer.classList.add('hidden');
+                icon.classList.remove('rotate-90');
+            }
+        }
+
+        function toggleParentCategoryMenu(wrapperId, show) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!wrapper) return;
+            document.querySelectorAll('[id$="-wrapper"]').forEach(el => {
+                if (el.id !== wrapperId && !el.id.includes('preview')) el.classList.add('hidden');
+            });
+            if (show) wrapper.classList.toggle('hidden');
+            else wrapper.classList.add('hidden');
+        }
+
+        function selectCategoryFinal(wrapperId, hiddenId, displayTextId, catId, catPath) {
+            const hidden = document.getElementById(hiddenId);
+            const displayText = document.getElementById(displayTextId);
+            if (hidden) hidden.value = catId;
+            if (displayText) displayText.textContent = catPath;
+            toggleParentCategoryMenu(wrapperId, false);
+        }
+
+        // Leitor de Extrato com Limpeza Cirúrgica, Remoção de Falsos Cabeçalhos e Checklist com Ignorar
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            if (file.name.endsWith('.csv')) {
+                reader.onload = function(e) { parseExtratoText(e.target.result); };
+                reader.readAsText(file);
+            } else if (file.name.endsWith('.pdf')) {
+                reader.onload = async function(e) {
+                    try {
+                        const typedarray = new Uint8Array(e.target.result);
+                        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                        let fullText = "";
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const textContent = await page.getTextContent();
+                            fullText += textContent.items.map(item => item.str).join(" ") + "\n";
+                        }
+                        parseExtratoText(fullText);
+                    } catch (err) {
+                        showToast("Erro ao ler o arquivo PDF.", "error");
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                showToast("Formato não suportado. Use CSV ou PDF.", "error");
+            }
+        }
+
+        function parseExtratoText(text) {
+            const lines = text.split('\n');
+            tempImportedTxs = [];
+            
+            lines.forEach((line, index) => {
+                const lineTrimmed = line.trim();
+                if (lineTrimmed.length > 5) {
+                    const lineUpper = lineTrimmed.toUpperCase();
+
+                    if (lineUpper.includes('SALDO') || lineUpper.includes('LIMITE') || lineUpper.includes('EXTRATO') || lineUpper.includes('FATURA') || lineUpper.includes('DATA;')) {
+                        return;
+                    }
+
+                    let txDate = new Date().toISOString().split('T')[0];
+                    const dateMatch = lineTrimmed.match(/(\d{2})[\/\-](\d{2})(?:[\/\-](\d{2,4}))?/);
+                    if (dateMatch) {
+                        const day = dateMatch[1];
+                        const month = dateMatch[2];
+                        let year = dateMatch[3] ? (dateMatch[3].length === 2 ? '20' + dateMatch[3] : dateMatch[3]) : currentYear;
+                        txDate = `${year}-${month}-${day}`;
+                    }
+
+                    let cleanDesc = lineTrimmed;
+                    const parts = lineTrimmed.split(';');
+                    if (parts.length >= 2) {
+                        for (let p of parts) {
+                            if (p && !p.match(/^\d{2}[\/\-]\d{2}/) && !p.match(/R\$/) && p.length > 2 && !p.match(/^\d+[\.,]\d{2}$/)) {
+                                cleanDesc = p.trim();
+                                break;
+                            }
+                        }
+                    } else {
+                        cleanDesc = cleanDesc.replace(/(\d{2}\/\d{2}(\/\d{4})?)/g, '')
+                                             .replace(/R\$\s*[\d\.,-]+/g, '')
+                                             .replace(/[\d\.,-]{5,}/g, '')
+                                             .replace(/[;,-]/g, ' ')
+                                             .trim();
+                    }
+                    cleanDesc = cleanDesc.replace(/\s+/g, ' ').toUpperCase();
+                    if (!cleanDesc || cleanDesc.length < 2) cleanDesc = "ESTABELECIMENTO";
+
+                    let categoryId = 'cat_unidentified';
+                    const matchedRule = state.rules.find(r => cleanDesc.includes(r.pattern.toUpperCase()));
+                    if (matchedRule) {
+                        categoryId = matchedRule.categoryId;
+                    }
+
+                    const matches = lineTrimmed.match(/(\d+[\.,]\d{2})/);
+                    const amount = matches ? parseFloat(matches[0].replace('.', '').replace(',', '.')) : 10.00;
+
+                    tempImportedTxs.push({
+                        id: 'tx_imp_' + index + '_' + Date.now(),
+                        cleanDescription: cleanDesc,
+                        amount: isNaN(amount) ? 10.00 : amount,
+                        date: txDate,
+                        type: 'expense',
+                        category: categoryId,
+                        ignore: false,
+                        createRule: false
+                    });
+                }
+            });
+
+            showImportPreview();
+        }
+
+        function showImportPreview() {
+            const container = document.getElementById('import-preview-container');
+            const tbody = document.getElementById('import-preview-table');
+            if (!container || !tbody) return;
+
+            container.classList.remove('hidden');
+            const allCats = state.categories.filter(c => c.type === 'expense');
+
+            tbody.innerHTML = tempImportedTxs.map((tx, idx) => `
+                <tr class="border-b bg-white ${tx.ignore ? 'opacity-40 bg-slate-100' : ''}">
+                    <td class="px-3 py-2 text-center">
+                        <input type="checkbox" ${tx.ignore ? 'checked' : ''} onchange="toggleTempTxIgnore(${idx}, this.checked)" title="Ignorar esta linha" class="w-4 h-4 text-rose-600 rounded cursor-pointer">
+                    </td>
+                    <td class="px-3 py-2 font-mono text-xs"><input type="date" value="${tx.date}" onchange="updateTempTxDate(${idx}, this.value)" class="bg-slate-50 border rounded p-1 text-xs"></td>
+                    <td class="px-3 py-2 font-semibold"><input type="text" value="${tx.cleanDescription}" onchange="updateTempTxDesc(${idx}, this.value)" class="bg-slate-50 border rounded p-1 w-full text-xs"></td>
+                    <td class="px-3 py-2">
+                        <input type="hidden" id="temp_cat_hidden_${idx}" value="${tx.category}">
+                        <div class="relative">
+                            <div id="temp_cat_display_${idx}" onclick="toggleParentCategoryMenu('temp_cat_dropdown_${idx}', true)" class="bg-slate-50 border rounded p-1 text-xs w-full cursor-pointer flex justify-between items-center">
+                                <span id="temp_cat_text_${idx}">${getCategoryPath(tx.category)}</span>
+                                <i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+                            </div>
+                            <div id="temp_cat_dropdown_${idx}" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-40 overflow-y-auto z-50 p-2 space-y-1">
+                                ${allCats.filter(c => !c.parentId).map(p => {
+                                    const subs = allCats.filter(s => s.parentId === p.id);
+                                    if (subs.length > 0) {
+                                        return `
+                                            <div class="space-y-1 mb-1">
+                                                <div class="px-2 py-1 font-bold text-slate-900 bg-slate-100 rounded text-xs cursor-pointer" onclick="toggleSubCategoryList(this)">📁 ${p.name}</div>
+                                                <div class="hidden pl-2 space-y-1">
+                                                    <div onclick="selectTempCategory(${idx}, '${p.id}', '${getCategoryPath(p.id).replace(/'/g, "\\'")}')" class="px-2 py-1 hover:bg-brand-50 rounded cursor-pointer text-xs font-semibold">⭐ ${p.name} (Principal)</div>
+                                                    ${subs.map(s => `<div onclick="selectTempCategory(${idx}, '${s.id}', '${getCategoryPath(s.id).replace(/'/g, "\\'")}')" class="px-2 py-1 hover:bg-brand-50 rounded cursor-pointer text-xs">└─ ${s.name}</div>`).join('')}
+                                                </div>
+                                            </div>
+                                        `;
+                                    } else {
+                                        return `<div onclick="selectTempCategory(${idx}, '${p.id}', '${getCategoryPath(p.id).replace(/'/g, "\\'")}')" class="px-2 py-1 font-bold text-slate-900 bg-slate-50 hover:bg-brand-50 rounded text-xs cursor-pointer mb-1">📁 ${p.name}</div>`;
+                                    }
+                                }).join('')}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                        <input type="checkbox" ${tx.createRule ? 'checked' : ''} onchange="toggleTempTxRule(${idx}, this.checked)" title="Criar regra automática com este código" class="w-4 h-4 text-brand-600 rounded cursor-pointer">
+                    </td>
+                    <td class="px-3 py-2 text-right font-bold text-rose-600">${formatCurrency(tx.amount)}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="6" class="text-center py-3 text-slate-400">Nenhum dado encontrado.</td></tr>`;
+        }
+
+        function toggleTempTxIgnore(idx, val) { if(tempImportedTxs[idx]) { tempImportedTxs[idx].ignore = val; showImportPreview(); } }
+        function updateTempTxDate(idx, val) { if(tempImportedTxs[idx]) tempImportedTxs[idx].date = val; }
+        function updateTempTxDesc(idx, val) { if(tempImportedTxs[idx]) tempImportedTxs[idx].cleanDescription = val.toUpperCase(); }
+        function selectTempCategory(idx, catId, catPath) {
+            if(tempImportedTxs[idx]) tempImportedTxs[idx].category = catId;
+            const hidden = document.getElementById(`temp_cat_hidden_${idx}`);
+            const textSpan = document.getElementById(`temp_cat_text_${idx}`);
+            if (hidden) hidden.value = catId;
+            if (textSpan) textSpan.textContent = catPath;
+            toggleParentCategoryMenu(`temp_cat_dropdown_${idx}`, false);
+        }
+        function toggleTempTxRule(idx, val) { if(tempImportedTxs[idx]) tempImportedTxs[idx].createRule = val; }
+
+        function cancelImportPreview() {
+            tempImportedTxs = [];
+            const container = document.getElementById('import-preview-container');
+            if (container) container.classList.add('hidden');
+            document.getElementById('statement-file-input').value = '';
+            showToast("Importação cancelada.", "info");
+        }
+
+        function confirmImportPreview() {
+            const validTxs = tempImportedTxs.filter(tx => !tx.ignore);
+            if (validTxs.length === 0) {
+                showToast("Nenhuma transação selecionada para importar.", "info");
+                return;
+            }
+
+            validTxs.forEach(tx => {
+                state.transactions.push({
+                    id: 'tx_' + Date.now() + Math.random(),
+                    description: tx.cleanDescription,
+                    amount: tx.amount,
+                    date: tx.date,
+                    type: tx.type,
+                    category: tx.category,
+                    isFixed: false
+                });
+
+                if (tx.createRule) {
+                    const exists = state.rules.some(r => r.pattern === tx.cleanDescription);
+                    if (!exists) {
+                        state.rules.push({
+                            id: 'rule_' + Date.now() + Math.random(),
+                            pattern: tx.cleanDescription,
+                            categoryId: tx.category
+                        });
+                    }
+                }
+            });
+
+            const count = validTxs.length;
+            tempImportedTxs = [];
+            
+            const container = document.getElementById('import-preview-container');
+            if (container) container.classList.add('hidden');
+            document.getElementById('statement-file-input').value = '';
+
+            saveToLocalStorage();
+            updateAllViews();
+            showToast(`${count} lançamentos confirmados e salvos com sucesso!`, "success");
+        }
+
+        // Metas & Tetos
+        function handleSaveGoal(event) {
+            event.preventDefault();
+            const category = document.getElementById('goal-cat-hidden').value;
+            const amount = parseFloat(document.getElementById('goal-amount').value);
+            const editId = document.getElementById('goal-edit-id').value;
+
+            if (!category) {
+                showToast("Selecione uma categoria válida.", "error");
+                return;
+            }
+
+            if (editId) {
+                state.goals = state.goals.map(g => g.id === editId ? { ...g, category, amount } : g);
+                showToast("Teto atualizado!");
+            } else {
+                state.goals.push({ id: 'goal_' + Date.now(), category, amount });
+                showToast("Teto cadastrado!");
+            }
+            saveToLocalStorage();
+            renderGoalsView();
+            resetGoalForm();
+        }
+
+        function startEditGoal(id) {
+            const g = state.goals.find(item => item.id === id);
+            if (!g) return;
+            document.getElementById('goal-edit-id').value = g.id;
+            setCategorySelection('goal-cat-wrapper', 'goal-cat-hidden', 'goal-cat-display-text', g.category);
+            document.getElementById('goal-amount').value = g.amount;
+            document.getElementById('btn-submit-goal').textContent = "Salvar Alterações";
+            document.getElementById('btn-cancel-edit-goal').classList.remove('hidden');
+        }
+
+        function deleteGoal(id) {
+            state.goals = state.goals.filter(g => g.id !== id);
+            saveToLocalStorage();
+            renderGoalsView();
+            showToast("Teto removido.", "info");
+        }
+
+        function handleSaveDream(event) {
+            event.preventDefault();
+            const name = document.getElementById('dream-name').value;
+            const target = parseFloat(document.getElementById('dream-target').value);
+            const current = parseFloat(document.getElementById('dream-current').value);
+            const editId = document.getElementById('dream-edit-id').value;
+
+            if (editId) {
+                state.longTermGoals = state.longTermGoals.map(d => d.id === editId ? { ...d, name, target, current } : d);
+                showToast("Meta atualizada!");
+            } else {
+                state.longTermGoals.push({ id: 'dream_' + Date.now(), name, target, current });
+                showToast("Meta cadastrada!");
+            }
+            saveToLocalStorage();
+            renderGoalsView();
+            resetDreamForm();
+        }
+
+        function startEditDream(id) {
+            const d = state.longTermGoals.find(item => item.id === id);
+            if (!d) return;
+            document.getElementById('dream-edit-id').value = d.id;
+            document.getElementById('dream-name').value = d.name;
+            document.getElementById('dream-target').value = d.target;
+            document.getElementById('dream-current').value = d.current;
+            document.getElementById('btn-submit-dream').textContent = "Salvar Alterações";
+            document.getElementById('btn-cancel-edit-dream').classList.remove('hidden');
+        }
+
+        function deleteDream(id) {
+            state.longTermGoals = state.longTermGoals.filter(d => d.id !== id);
+            saveToLocalStorage();
+            renderGoalsView();
+            showToast("Meta removida.", "info");
+        }
+
+        function resetGoalForm() {
+            document.getElementById('goal-edit-id').value = '';
+            document.getElementById('goal-amount').value = '';
+            document.getElementById('btn-submit-goal').textContent = "Salvar Teto";
+            document.getElementById('btn-cancel-edit-goal').classList.add('hidden');
+        }
+
+        function resetDreamForm() {
+            document.getElementById('dream-edit-id').value = '';
+            document.getElementById('dream-name').value = '';
+            document.getElementById('dream-target').value = '';
+            document.getElementById('dream-current').value = '';
+            document.getElementById('btn-submit-dream').textContent = "Salvar Meta";
+            document.getElementById('btn-cancel-edit-dream').classList.add('hidden');
+        }
+
+        function setCategorySelection(wrapperId, hiddenId, displayTextId, catId) {
+            const hidden = document.getElementById(hiddenId);
+            const displayText = document.getElementById(displayTextId);
+            if (hidden) hidden.value = catId;
+            const cat = state.categories.find(c => c.id === catId);
+            if (displayText && cat) displayText.textContent = getCategoryPath(cat.id);
+        }
+
+        function renderGoalsView() {
+            const container = document.getElementById('goals-dreams-container');
+            if (!container) return;
+
+            const currentMonth = getSelectedMonthStr();
+            let html = '<h4 class="text-xs font-bold text-slate-500 uppercase mt-2">Tetos de Gastos</h4>';
+            
+            if (state.goals.length === 0) {
+                html += '<p class="text-xs text-slate-400 italic">Nenhum teto cadastrado.</p>';
+            } else {
+                state.goals.forEach(g => {
+                    const spent = state.transactions.filter(t => t.date && t.date.startsWith(currentMonth) && t.category === g.category).reduce((sum, t) => sum + t.amount, 0);
+                    const catObj = state.categories.find(c => c.id === g.category);
+                    const catName = catObj ? catObj.name : 'Categoria';
+                    const pct = Math.min(100, (spent / g.amount) * 100).toFixed(0);
+                    const color = pct > 90 ? 'bg-rose-500' : 'bg-brand-500';
+
+                    html += `
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span>${catName}</span>
+                                <div class="space-x-2">
+                                    <span>${formatCurrency(spent)} / ${formatCurrency(g.amount)}</span>
+                                    <button onclick="startEditGoal('${g.id}')" class="text-amber-600 hover:text-amber-800"><i class="fa-solid fa-pencil"></i></button>
+                                    <button onclick="deleteGoal('${g.id}')" class="text-rose-600 hover:text-rose-800"><i class="fa-regular fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                <div class="${color} h-full" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += '<h4 class="text-xs font-bold text-slate-500 uppercase mt-4">Metas de Economia</h4>';
+            if (state.longTermGoals.length === 0) {
+                html += '<p class="text-xs text-slate-400 italic">Nenhuma meta de economia cadastrada.</p>';
+            } else {
+                state.longTermGoals.forEach(d => {
+                    const pct = Math.min(100, (d.current / d.target) * 100).toFixed(0);
+                    html += `
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span>${d.name}</span>
+                                <div class="space-x-2">
+                                    <span>${formatCurrency(d.current)} / ${formatCurrency(d.target)} (${pct}%)</span>
+                                    <button onclick="startEditDream('${d.id}')" class="text-amber-600 hover:text-amber-800"><i class="fa-solid fa-pencil"></i></button>
+                                    <button onclick="deleteDream('${d.id}')" class="text-rose-600 hover:text-rose-800"><i class="fa-regular fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                <div class="bg-blue-600 h-full" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            container.innerHTML = html;
+        }
+
+        // Inteligência Financeira e Economia
+        function renderSmartInsights() {
+            const container = document.getElementById('smart-insights-container');
+            if (!container) return;
+            const currentMonth = getSelectedMonthStr();
+            const currentTxs = state.transactions.filter(tx => tx.date && tx.date.startsWith(currentMonth) && tx.type === 'expense');
+
+            if (currentTxs.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 italic text-[11px]">Nenhuma despesa registrada neste mês.</p>`;
+                return;
+            }
+
+            let fixedTotal = 0, variableTotal = 0;
+            currentTxs.forEach(tx => {
+                const root = getRootCategory(tx.category);
+                const rootName = root ? root.name.toLowerCase() : '';
+                if (tx.isFixed || ['moradia', 'saude', 'educacao', 'transporte'].some(e => rootName.includes(e))) {
+                    fixedTotal += tx.amount;
+                } else {
+                    variableTotal += tx.amount;
+                }
+            });
+
+            const totalExp = fixedTotal + variableTotal;
+            const fixedPct = totalExp > 0 ? ((fixedTotal / totalExp) * 100).toFixed(0) : 0;
+
+            container.innerHTML = `
+                <div class="flex justify-between border-b border-slate-700 pb-1">
+                    <span>Gastos Essenciais / Fixos:</span>
+                    <span class="font-bold text-amber-400">${formatCurrency(fixedTotal)} (${fixedPct}%)</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-700 pb-1">
+                    <span>Gastos Variáveis / Supérfluos:</span>
+                    <span class="font-bold text-emerald-400">${formatCurrency(variableTotal)}</span>
+                </div>
+                <p class="text-[10px] text-slate-300 mt-2 bg-slate-800/80 p-2.5 rounded-lg border border-slate-700"><i class="fa-solid fa-lightbulb text-yellow-400 mr-1"></i> Controle seus gastos variáveis para acelerar suas metas de patrimônio.</p>
+            `;
+        }
+
+        // Gráficos e Drilldown
+        function renderDashboardCharts() {
+            const currentMonth = getSelectedMonthStr();
+            const currentTxs = state.transactions.filter(tx => tx.date && tx.date.startsWith(currentMonth));
+            const filtered = currentTxs.filter(tx => tx.type === currentPieType);
+
+            const sums = {};
+            filtered.forEach(tx => {
+                const root = getRootCategory(tx.category);
+                const name = root ? root.name : 'Outros';
+                sums[name] = (sums[name] || 0) + tx.amount;
+            });
+
+            const labels = Object.keys(sums);
+            const data = Object.values(sums);
+            const baseColor = currentPieType === 'expense' ? '#ef4444' : '#10b981';
+            const colors = labels.map(() => baseColor);
+
+            const ctx = document.getElementById('chart-categories');
+            const emptyEl = document.getElementById('chart-categories-empty');
+            const legendEl = document.getElementById('chart-categories-legend');
+
+            if (ctx) {
+                if (data.length === 0) {
+                    if (emptyEl) emptyEl.classList.remove('hidden');
+                    if (legendEl) legendEl.innerHTML = '';
+                    if (chartCategoriesInstance) { chartCategoriesInstance.destroy(); chartCategoriesInstance = null; }
+                } else {
+                    if (emptyEl) emptyEl.classList.add('hidden');
+                    if (chartCategoriesInstance) chartCategoriesInstance.destroy();
+                    chartCategoriesInstance = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false, 
+                            cutout: '70%',
+                            plugins: { legend: { display: false } },
+                            onClick: (evt, elements) => {
+                                if (elements.length > 0) {
+                                    showCategoryDrilldown(labels[elements[0].index]);
+                                }
+                            }
+                        }
+                    });
+
+                    if (legendEl) {
+                        legendEl.innerHTML = labels.map((lbl, idx) => `
+                            <div class="flex items-center justify-between text-xs space-x-1 cursor-pointer hover:bg-slate-50 p-1 rounded" onclick="showCategoryDrilldown('${lbl}')">
+                                <div class="flex items-center space-x-1 truncate">
+                                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${baseColor}"></span>
+                                    <span class="truncate text-slate-700 font-medium" title="${lbl}">${lbl}</span>
+                                </div>
+                                <span class="font-bold text-slate-900">${formatCurrency(data[idx])}</span>
+                            </div>
+                        `).join('');
+                    }
+                }
+            }
+
+            const last6 = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(); d.setMonth(d.getMonth() - i);
+                last6.push(d.toISOString().substring(0, 7));
+            }
+            const incArr = Array(6).fill(0), expArr = Array(6).fill(0);
+            state.transactions.forEach(tx => {
+                if (tx.date) {
+                    const ym = tx.date.substring(0, 7);
+                    const idx = last6.indexOf(ym);
+                    if (idx !== -1) {
+                        if (tx.type === 'income') incArr[idx] += tx.amount;
+                        else if (tx.type === 'expense') expArr[idx] += tx.amount;
+                    }
+                }
+            });
+            const ctxCF = document.getElementById('chart-cashflow');
+            if (ctxCF) {
+                if (chartCashflowInstance) chartCashflowInstance.destroy();
+                chartCashflowInstance = new Chart(ctxCF, {
+                    type: 'bar',
+                    data: {
+                        labels: last6.map(m => m.split('-').reverse().join('/')),
+                        datasets: [
+                            { label: 'Receitas', data: incArr, backgroundColor: '#10b981', borderRadius: 4 },
+                            { label: 'Despesas', data: expArr, backgroundColor: '#ef4444', borderRadius: 4 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => 'R$ ' + v } } } }
+                });
+            }
+        }
+
+        function showCategoryDrilldown(categoryName) {
+            drilldownCategoryName = categoryName;
+            const currentMonth = getSelectedMonthStr();
+            const panel = document.getElementById('category-drilldown-panel');
+            const title = document.getElementById('drilldown-title');
+            const tbody = document.getElementById('drilldown-table-body');
+            if (!panel || !tbody) return;
+
+            panel.classList.remove('hidden');
+            title.textContent = `Movimentações da Categoria: ${categoryName} (${currentMonth.split('-').reverse().join('/')})`;
+
+            const matchedTxs = state.transactions.filter(tx => {
+                if (!tx.date || !tx.date.startsWith(currentMonth)) return false;
+                if (tx.type !== currentPieType) return false;
+                const root = getRootCategory(tx.category);
+                return root && root.name === categoryName;
+            });
+
+            tbody.innerHTML = matchedTxs.map(tx => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="px-4 py-3">${formatDateBR(tx.date)}</td>
+                    <td class="px-4 py-3 font-semibold">${tx.description}</td>
+                    <td class="px-4 py-3">${getCategoryPath(tx.category)}</td>
+                    <td class="px-4 py-3 text-right font-semibold ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}">${formatCurrency(tx.amount)}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="4" class="text-center py-4 text-slate-400 text-xs">Nenhuma movimentação encontrada.</td></tr>`;
+        }
+
+        function closeDrilldown() {
+            const panel = document.getElementById('category-drilldown-panel');
+            if (panel) panel.classList.add('hidden');
+            drilldownCategoryName = null;
+        }
+
+        // Patrimônio e Calculadora
+        function renderPatrimonioChart() {
+            const ctx = document.getElementById('chart-patrimonio');
+            if (!ctx || typeof Chart === 'undefined') return;
+            if (chartPatrimonioInstance) chartPatrimonioInstance.destroy();
+
+            const groupedByDate = {};
+            const sortedPat = [...state.patrimonio].sort((a, b) => new Date(a.date) - new Date(b.date));
+            sortedPat.forEach(p => {
+                groupedByDate[p.date] = (groupedByDate[p.date] || 0) + p.amount;
+            });
+
+            const labels = Object.keys(groupedByDate).map(d => formatDateBR(d));
+            const data = Object.values(groupedByDate);
+
+            chartPatrimonioInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.length ? labels : ['Atual'],
+                    datasets: [{
+                        label: 'Patrimônio Consolidado (R$)',
+                        data: data.length ? data : [0],
+                        borderColor: '#2563eb',
+                        borderWidth: 2,
+                        fill: true,
+                        backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                        tension: 0.2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function calcularAporte() {
+            let totalPat = state.patrimonio.reduce((sum, p) => sum + p.amount, 0);
+            const atualEl = document.getElementById('calc-pat-atual');
+            if (atualEl) atualEl.textContent = formatCurrency(totalPat);
+
+            const metaEl = document.getElementById('calc-meta-val');
+            const meta = metaEl ? parseFloat(metaEl.value) || 500000 : 500000;
+            const anosEl = document.getElementById('calc-anos');
+            const anos = anosEl ? parseInt(anosEl.value) || 3 : 3;
+            const meses = anos * 12;
+            const taxaMensal = Math.pow(1 + 0.10, 1/12) - 1;
+            const restante = meta - (totalPat * Math.pow(1 + taxaMensal, meses));
+            let aporte = (restante > 0 && taxaMensal > 0) ? restante * (taxaMensal / (Math.pow(1 + taxaMensal, meses) - 1)) : 0;
+
+            const resEl = document.getElementById('calc-resultado');
+            if (resEl) resEl.textContent = formatCurrency(Math.max(0, aporte)) + " / mês";
+        }
+
+        function handleSavePatrimonio(event) {
+            event.preventDefault();
+            const category = document.getElementById('pat-category').value;
+            const description = document.getElementById('pat-desc').value;
+            const amount = parseFloat(document.getElementById('pat-amount').value);
+            const date = document.getElementById('pat-date').value;
+            const editId = document.getElementById('pat-edit-id').value;
+
+            if (editId) {
+                state.patrimonio = state.patrimonio.map(p => p.id === editId ? { ...p, category, description, amount, date } : p);
+                showToast("Cofrinho atualizado!");
+            } else {
+                state.patrimonio.push({ id: 'pat_' + Date.now(), category, description, amount, date });
+                showToast("Cofrinho registrado!");
+            }
+            saveToLocalStorage();
+            updateAllViews();
+            renderPatrimonioChart();
+            resetPatForm();
+        }
+
+        function renderPatrimonioView() {
+            const table = document.getElementById('pat-table-body');
+            const totalLabel = document.getElementById('pat-total-label');
+            if (!table || !totalLabel) return;
+            let total = 0;
+            table.innerHTML = state.patrimonio.map(p => {
+                total += p.amount;
+                return `
+                    <tr class="border-b">
+                        <td class="px-4 py-3">${formatDateBR(p.date)}</td>
+                        <td class="px-4 py-3 font-semibold">${p.description}</td>
+                        <td class="px-4 py-3">${p.category}</td>
+                        <td class="px-4 py-3 text-right font-bold text-blue-600">${formatCurrency(p.amount)}</td>
+                        <td class="px-4 py-3 text-center space-x-2">
+                            <button onclick="startEditPatrimonio('${p.id}')" class="text-amber-600 p-1"><i class="fa-solid fa-pencil"></i></button>
+                            <button onclick="deletePatrimonio('${p.id}')" class="text-rose-600 p-1"><i class="fa-regular fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('') || '<tr><td colspan="5" class="text-center py-4 text-slate-400 text-xs">Nenhum cofrinho cadastrado.</td></tr>';
+            totalLabel.textContent = "Total: " + formatCurrency(total);
+        }
+
+        function startEditPatrimonio(id) {
+            const p = state.patrimonio.find(item => item.id === id);
+            if (!p) return;
+            document.getElementById('pat-edit-id').value = p.id;
+            document.getElementById('pat-category').value = p.category;
+            document.getElementById('pat-desc').value = p.description;
+            document.getElementById('pat-amount').value = p.amount;
+            document.getElementById('pat-date').value = p.date;
+            document.getElementById('pat-form-title').textContent = "Editar Cofrinho";
+            document.getElementById('btn-submit-pat').textContent = "Salvar Alterações";
+            document.getElementById('btn-cancel-edit-pat').classList.remove('hidden');
+        }
+
+        function resetPatForm() {
+            document.getElementById('pat-edit-id').value = '';
+            document.getElementById('pat-form-title').textContent = "Declarar / Atualizar Cofrinho (Ativo)";
+            document.getElementById('btn-submit-pat').textContent = "Salvar / Registrar Aporte";
+            document.getElementById('btn-cancel-edit-pat').classList.add('hidden');
+            document.getElementById('pat-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function deletePatrimonio(id) {
+            state.patrimonio = state.patrimonio.filter(p => p.id !== id);
+            saveToLocalStorage();
+            updateAllViews();
+            renderPatrimonioChart();
+            showToast("Cofrinho removido.", "info");
+        }
+
+        // Configurações e Categorias
+        function handleSaveCategory(event) {
+            event.preventDefault();
+            const name = document.getElementById('cat-new-name').value;
+            const type = document.getElementById('cat-new-type').value;
+            const parentId = document.getElementById('cat-new-parent').value || null;
+
+            state.categories.push({ id: 'cat_' + Date.now(), name, type, color: '#10b981', parentId });
+            saveToLocalStorage();
+            updateAllViews();
+            showToast("Categoria criada!");
+            document.getElementById('cat-new-name').value = '';
+        }
+
+        function renderCategoriesSettings() {
+            const container = document.getElementById('settings-categories-tree-container');
+            if (!container) return;
+            container.innerHTML = state.categories.map(c => `
+                <div class="flex justify-between items-center text-xs p-2 bg-slate-50 rounded-lg border">
+                    <span>${getCategoryPath(c.id)} (${c.type === 'income' ? 'Receita' : 'Despesa'})</span>
+                </div>
+            `).join('');
+        }
+
+        function handleSaveRule(event) {
+            event.preventDefault();
+            const pattern = document.getElementById('rule-keyword').value.toUpperCase();
+            const categoryId = document.getElementById('rule-cat-hidden').value;
+            
+            if (!categoryId) {
+                showToast("Selecione uma categoria para a regra.", "error");
+                return;
+            }
+
+            state.rules.push({ id: 'rule_' + Date.now(), pattern, categoryId });
+            saveToLocalStorage();
+            renderRulesList();
+            showToast("Regra salva!");
+            document.getElementById('rule-keyword').value = '';
+        }
+
+        function renderRulesList() {
+            const container = document.getElementById('rules-list-container');
+            if (!container) return;
+            container.innerHTML = state.rules.map(r => `
+                <div class="flex justify-between items-center text-xs p-2 bg-slate-50 rounded-lg border">
+                    <span><b>${r.pattern}</b> ➔ ${getCategoryPath(r.categoryId)}</span>
+                </div>
+            `).join('') || '<p class="text-xs text-slate-400 italic">Nenhuma regra cadastrada.</p>';
+        }
+
+        function formatCurrency(v) {
+            return typeof v === 'number' ? v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
+        }
+
+        function formatDateBR(dStr) {
+            if (!dStr) return '';
+            const p = dStr.split('-');
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : dStr;
+        }
+
+        // --- FIREBASE AUTH & FIRESTORE SYNC ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBj3aWxJUqhla7_QegFtBW1fesc5awbLc0",
+            authDomain: "controle-financeiro-fami-5972f.firebaseapp.com",
+            projectId: "controle-financeiro-fami-5972f",
+            storageBucket: "controle-financeiro-fami-5972f.firebasestorage.app",
+            messagingSenderId: "180397658983",
+            appId: "1:180397658983:web:cc6e4fc529640cd598d5c2"
+        };
+        
+        let db = null;
+        let currentUser = null;
+
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+
+            firebase.auth().onAuthStateChanged(user => {
+                currentUser = user;
+                const btnLogin = document.getElementById('btn-firebase-auth');
+                const btnText = document.getElementById('firebase-btn-text');
+                if (user) {
+                    if (btnLogin) {
+                        btnLogin.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        btnLogin.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+                    }
+                    if (btnText) btnText.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Caio';
+                    
+                    loadFromCloud();
+                } else {
+                    if (btnLogin) {
+                        btnLogin.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                        btnLogin.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    }
+                    if (btnText) btnText.textContent = 'Sincronizar';
+                }
+            });
+        }
+
+        function handleAuthClick() {
+            if (typeof firebase === 'undefined') return;
+            const user = firebase.auth().currentUser;
+            if (user) {
+                if (confirm("Deseja desconectar sua conta do Google?")) {
+                    firebase.auth().signOut().then(() => showToast("Desconectado do Google.", "info"));
+                }
+            } else {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithPopup(provider)
+                    .then(() => showToast("Conectado com o Google com sucesso!", "success"))
+                    .catch(err => showToast("Erro no login: " + err.message, "error"));
+            }
+        }
+
+        function syncToCloud() {
+            if (!db || !currentUser) return;
+            const docRef = db.collection('users').doc(currentUser.uid);
+            docRef.set({
+                transactions: state.transactions,
+                categories: state.categories,
+                patrimonio: state.patrimonio,
+                rules: state.rules,
+                goals: state.goals,
+                longTermGoals: state.longTermGoals,
+                updatedAt: new Date().toISOString()
+            }, { merge: true }).catch(err => console.error("Erro ao sincronizar com a nuvem:", err));
+        }
+
+        function loadFromCloud() {
+            if (!db || !currentUser) return;
+            const docRef = db.collection('users').doc(currentUser.uid);
+            docRef.get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    state.transactions = data.transactions || state.transactions;
+                    state.categories = data.categories || state.categories;
+                    state.patrimonio = data.patrimonio || state.patrimonio;
+                    state.rules = data.rules || state.rules;
+                    state.goals = data.goals || state.goals;
+                    state.longTermGoals = data.longTermGoals || state.longTermGoals;
+                    
+                    saveToLocalStorage();
+                    updateAllViews();
+                    showToast("Dados sincronizados da nuvem!", "success");
+                }
+            }).catch(err => console.error("Erro ao carregar da nuvem:", err));
+        }
+    </script>
+</body>
+</html>
